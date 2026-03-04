@@ -1298,41 +1298,66 @@ function encodeMember(userId) {
 
 function decodeMember(encoded) {
   try {
-    return JSON.parse(decodeURIComponent(escape(atob(encoded))));
-  } catch { return null; }
+    // รองรับทั้ง URL-safe base64 และปกติ
+    const b64 = encoded.replace(/-/g,'+').replace(/_/g,'/');
+    const json = decodeURIComponent(
+      Array.from(atob(b64))
+        .map(c => '%' + c.charCodeAt(0).toString(16).padStart(2,'0'))
+        .join('')
+    );
+    return JSON.parse(json);
+  } catch(e) {
+    console.error('decodeMember error:', e);
+    return null;
+  }
 }
 
-// --- copy link ---
+// --- copy link --- (ใช้ URL-safe base64)
 function copyMemberLink(userId) {
-  const encoded = encodeMember(userId);
-  if (!encoded) { toast('ไม่พบสมาชิก','error'); return; }
-  const url = window.location.href.split('?')[0] + '?member=' + encoded;
+  const u = DB.users.find(u=>u.id===userId);
+  if (!u) { toast('ไม่พบสมาชิก','error'); return; }
+
+  const orders = DB.orders.filter(o=>o.refCode===u.refCode).map(o=>({
+    ts:o.ts, amt:o.amt, commission:o.commission, rate:o.rate
+  }));
+  const payload = {
+    id:u.id, name:u.name, refCode:u.refCode,
+    totalComm:u.totalComm||0, pendingComm:u.pendingComm||0,
+    paidComm:u.paidComm||0, totalSales:u.totalSales||0,
+    orderCount:u.orderCount||0, orders,
+    generatedAt:Date.now()
+  };
+
+  // URL-safe base64
+  const json    = JSON.stringify(payload);
+  const encoded = btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g,
+    (_,p)=>String.fromCharCode('0x'+p)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+  const base = window.location.href.split('?')[0];
+  const url  = base + '?member=' + encoded;
+
   navigator.clipboard.writeText(url)
-    .then(()=> toast('📋 คัดลอกลิ้งสมาชิกแล้ว — ส่งให้เจ้าของรหัสได้เลย','success'))
-    .catch(()=> {
-      // fallback: แสดง url ให้ copy เอง
-      prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url);
-    });
+    .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + u.name + ' ได้เลย','success'))
+    .catch(()=> { prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url); });
 }
 
 // --- render member page ---
 function renderMemberPage(data) {
-  // ซ่อน mode bar buttons ที่ไม่เกี่ยว
   document.getElementById('btn-staff').style.display = 'none';
   document.getElementById('btn-admin').style.display = 'none';
 
-  const card = document.getElementById('member-card');
+  const card    = document.getElementById('member-card');
   const initial = data.name.charAt(0).toUpperCase();
   const genDate = new Date(data.generatedAt).toLocaleDateString('th-TH',{day:'2-digit',month:'long',year:'numeric'});
 
-  // orders rows
-  const orderRows = data.orders.length
+  const orderRows = data.orders && data.orders.length
     ? [...data.orders].sort((a,b)=>b.ts-a.ts).slice(0,10).map(o=>`
         <div class="m-order-item">
           <div class="m-order-dot"></div>
           <div class="m-order-info">
             <div class="m-order-amt">ยอดซื้อ ฿${fmt(o.amt)}</div>
-            <div class="m-order-date">${new Date(o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+            <div class="m-order-date">${new Date(o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})}</div>
           </div>
           <div class="m-order-comm">+฿${fmt(o.commission)}</div>
         </div>`).join('')
@@ -1344,10 +1369,9 @@ function renderMemberPage(data) {
       <div class="member-name">${data.name}</div>
       <div class="member-code">📋 ${data.refCode}</div>
     </div>
-
     <div class="mstats">
       <div class="mstat" style="--mbar:linear-gradient(90deg,var(--green),var(--accent))">
-        <div class="mstat-label">💸 ค่าคอมสะสมทั้งหมด</div>
+        <div class="mstat-label">💸 ค่าคอมสะสม</div>
         <div class="mstat-value cg">฿${fmt(data.totalComm)}</div>
         <div class="mstat-sub">จาก ${data.orderCount} ออเดอร์</div>
       </div>
@@ -1361,38 +1385,35 @@ function renderMemberPage(data) {
         <div class="mstat-value" style="color:var(--accent)">฿${fmt(data.paidComm)}</div>
         <div class="mstat-sub">โอนแล้ว</div>
       </div>
-      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--p2),var(--accent2))">
-        <div class="mstat-label">🛒 ยอดขายผ่านรหัส</div>
+      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--p2),#7c3aed)">
+        <div class="mstat-label">🛒 ยอดขายรวม</div>
         <div class="mstat-value cm">฿${fmt(data.totalSales)}</div>
-        <div class="mstat-sub">รวมทุกออเดอร์</div>
+        <div class="mstat-sub">ผ่านรหัสของคุณ</div>
       </div>
     </div>
-
-    <div class="m-orders-title">📋 ประวัติออเดอร์ (10 ล่าสุด)</div>
+    <div class="m-orders-title">📋 ประวัติออเดอร์ล่าสุด</div>
     ${orderRows}
-
-    <div style="margin-top:20px;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted);text-align:center;line-height:1.7">
-      ข้อมูล ณ วันที่ ${genDate}<br>
-      สอบถามยอดล่าสุดได้ที่แอดมิน
+    <div style="margin-top:20px;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted);text-align:center;line-height:1.8">
+      ข้อมูล ณ วันที่ ${genDate}<br>สอบถามยอดล่าสุดได้ที่แอดมิน
     </div>
   `;
 
-  // show page
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p=>{ p.classList.remove('on'); p.style.display='none'; });
   const pg = document.getElementById('pg-member');
-  pg.style.display = 'flex';
+  pg.style.cssText = 'display:flex;align-items:center;justify-content:center;flex-direction:column;padding:80px 20px 40px;min-height:100vh;';
   pg.classList.add('on');
   document.title = `ยอดค่าคอม — ${data.name}`;
 }
 
 // --- check URL on load ---
 function checkMemberUrl() {
-  const params = new URLSearchParams(window.location.search);
+  const params  = new URLSearchParams(window.location.search);
   const encoded = params.get('member');
   if (!encoded) return false;
   const data = decodeMember(encoded);
-  if (!data) {
-    toast('ลิ้งไม่ถูกต้องหรือหมดอายุ','error');
+  if (!data || !data.name) {
+    // แสดง error หลัง DOM พร้อม
+    setTimeout(()=> toast('ลิ้งไม่ถูกต้องหรือหมดอายุ','error'), 300);
     return false;
   }
   renderMemberPage(data);
@@ -1400,7 +1421,6 @@ function checkMemberUrl() {
 }
 
 // ─── INIT ──────────────────────────────
-// ตรวจสอบ URL ก่อน — ถ้ามี ?member= แสดงหน้า member ทันที
 if (!checkMemberUrl()) {
   loadDemo();
 }
