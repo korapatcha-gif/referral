@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referral & Commission System</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#07090f;--s1:#0d1420;--s2:#131d2e;--s3:#192438;
+  --border:#1a2d45;--accent:#00e5ff;--p2:#7c3aed;
+  --green:#10b981;--red:#ef4444;--gold:#f59e0b;
+  --text:#e8eef5;--muted:#4a6080;
+  --mono:'Space Mono',monospace;--body:'Sarabun',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,229,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.02) 1px,transparent 1px);
+  background-size:48px 48px;}
+
+/* ─── MODE SWITCHER ─── */
+.mode-bar{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  background:rgba(7,9,15,.9);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;gap:12px;
+}
+.mode-bar-left{display:flex;align-items:center;gap:10px;}
+.app-logo{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:1px;font-weight:700;}
+.mode-toggle{
+  display:flex;gap:3px;background:var(--s2);
+  border:1px solid var(--border);border-radius:10px;padding:3px;
+}
+.mode-btn{
+  padding:6px 16px;border:none;background:transparent;
+  color:var(--muted);font-family:var(--body);font-size:12px;font-weight:700;
+  border-radius:7px;cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.mode-btn.on{
+  background:linear-gradient(135deg,rgba(0,229,255,.14),rgba(124,58,237,.1));
+  color:var(--accent);border:1px solid rgba(0,229,255,.2);
+}
+.mode-btn:hover:not(.on){color:var(--text);background:var(--s3);}
+
+/* ─── PAGES ─── */
+.page{display:none;min-height:100vh;padding-top:60px;}
+.page.on{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════
+   STAFF PAGE
+═══════════════════════════════════ */
+#pg-staff{
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;padding:80px 20px 40px;
+}
+#pg-staff.on{display:flex;animation:fadeIn .25s ease;}
+
+.staff-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:24px;
+  padding:40px;width:100%;max-width:480px;position:relative;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+}
+.staff-card::before{
+  content:'';position:absolute;inset:0;border-radius:24px;padding:1px;
+  background:linear-gradient(135deg,rgba(0,229,255,.1),rgba(124,58,237,.05),transparent 60%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+}
+
+.staff-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px;}
+.staff-logo-icon{
+  width:42px;height:42px;background:linear-gradient(135deg,rgba(0,229,255,.15),rgba(124,58,237,.15));
+  border:1px solid rgba(0,229,255,.2);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.staff-logo-text{font-size:14px;font-weight:700;}
+.staff-logo-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.staff-divider{border:none;border-top:1px solid var(--border);margin:0 0 22px;}
+
+.sec-label{
+  font-size:10px;font-weight:700;color:var(--accent);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* REF INPUT */
+.ref-input{
+  width:100%;background:var(--s2);border:2px solid var(--border);border-radius:14px;
+  padding:16px 20px;color:var(--text);font-family:var(--mono);
+  font-size:20px;font-weight:700;letter-spacing:4px;outline:none;
+  transition:border-color .25s,box-shadow .25s,background .25s;
+  text-align:center;text-transform:uppercase;margin-bottom:6px;
+}
+.ref-input::placeholder{color:var(--muted);font-size:16px;letter-spacing:3px;}
+.ref-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.07);background:var(--s3);}
+.ref-input.valid  {border-color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,.07);}
+.ref-input.invalid{border-color:var(--red);  box-shadow:0 0 0 3px rgba(239,68,68,.07);}
+
+.ref-status{
+  min-height:44px;border-radius:10px;padding:9px 13px;font-size:13px;
+  margin-bottom:18px;display:flex;align-items:center;gap:10px;transition:all .25s;
+}
+.ref-status.empty   {background:transparent;}
+.ref-status.found   {background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.18);}
+.ref-status.notfound{background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.18);}
+.ref-status.typing  {background:rgba(0,229,255,.05); border:1px solid rgba(0,229,255,.1);}
+.ref-avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--green));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;color:#000;
+}
+
+/* AMT INPUT */
+.amt-wrap{position:relative;margin-bottom:6px;}
+.amt-currency{
+  position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  font-family:var(--mono);font-size:20px;color:var(--muted);pointer-events:none;font-weight:700;
+}
+.amt-input{
+  width:100%;background:var(--s2);border:2px solid var(--border);border-radius:14px;
+  padding:16px 20px 16px 44px;color:var(--text);font-family:var(--mono);
+  font-size:28px;font-weight:700;outline:none;
+  transition:border-color .25s,box-shadow .25s;-moz-appearance:textfield;
+}
+.amt-input::-webkit-inner-spin-button,.amt-input::-webkit-outer-spin-button{-webkit-appearance:none;}
+.amt-input::placeholder{color:var(--muted);font-size:20px;}
+.amt-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.07);}
+.amt-unit{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);}
+
+.quick-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.qa{
+  flex:1;min-width:64px;background:var(--s2);border:1px solid var(--border);
+  border-radius:8px;padding:7px 6px;font-family:var(--mono);font-size:11px;
+  font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;
+}
+.qa:hover,.qa.on{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.06);}
+
+.comm-preview{
+  background:linear-gradient(135deg,rgba(16,185,129,.06),rgba(0,229,255,.03));
+  border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:14px 18px;
+  margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  transition:opacity .3s,transform .3s;
+}
+.comm-preview.hidden{opacity:0;pointer-events:none;transform:translateY(3px);}
+.comm-big{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--green);line-height:1;}
+.comm-sub{font-size:10px;color:var(--muted);margin-top:3px;text-align:right;}
+
+.submit-btn{
+  width:100%;background:linear-gradient(135deg,#059669,var(--green));border:none;
+  border-radius:14px;padding:16px;color:#fff;font-family:var(--body);font-size:16px;
+  font-weight:800;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.submit-btn:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 8px 28px rgba(16,185,129,.28);}
+.submit-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+/* SUCCESS OVERLAY */
+.sov{
+  position:fixed;inset:0;background:rgba(7,9,15,.92);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;z-index:200;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.sov.show{opacity:1;pointer-events:all;}
+.scard{
+  background:var(--s1);border:1px solid rgba(16,185,129,.3);border-radius:24px;
+  padding:44px 36px;max-width:380px;width:90%;text-align:center;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+  animation:popIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.sicon{
+  width:68px;height:68px;margin:0 auto 18px;border-radius:50%;font-size:30px;
+  background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(0,229,255,.1));
+  border:2px solid rgba(16,185,129,.3);
+  display:flex;align-items:center;justify-content:center;
+}
+.stitle{font-size:22px;font-weight:800;color:var(--green);margin-bottom:6px;}
+.ssub  {font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+.rcpt{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;}
+.rrow{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;}
+.rrow:not(:last-child){border-bottom:1px solid rgba(30,45,71,.5);margin-bottom:5px;padding-bottom:10px;}
+.rrow.hl .rv{font-family:var(--mono);font-weight:700;color:var(--green);font-size:17px;}
+.rl{color:var(--muted);font-size:12px;}.rv{color:var(--text);font-weight:600;}
+.next-btn{
+  width:100%;background:var(--s2);border:1px solid var(--border);border-radius:12px;
+  padding:13px;color:var(--text);font-family:var(--body);font-size:14px;
+  font-weight:700;cursor:pointer;transition:all .2s;
+}
+.next-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* recent */
+.recent-wrap{width:100%;max-width:480px;margin-top:14px;}
+.recent-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;text-align:center;}
+.ritem{
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  padding:11px 14px;display:flex;align-items:center;gap:10px;margin-bottom:7px;
+  animation:fadeIn .25s ease;
+}
+.rdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.rinfo{flex:1;}.rprod{font-size:13px;font-weight:600;}.rmeta{font-size:11px;color:var(--muted);margin-top:1px;}
+.rcomm{font-family:var(--mono);font-weight:700;color:var(--green);font-size:13px;}
+
+/* ═══════════════════════════════════
+   ADMIN PAGE
+═══════════════════════════════════ */
+#pg-admin{display:none;}
+#pg-admin.on{display:block;animation:fadeIn .25s ease;}
+.awrap{max-width:1280px;margin:0 auto;padding:20px;position:relative;z-index:1;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:20px;}
+.sc{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--bar);}
+.sl{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
+.sv{font-family:var(--mono);font-size:clamp(18px,3vw,26px);font-weight:700;color:var(--accent);line-height:1;}
+.ss{font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* TABS */
+.tabs{display:flex;gap:3px;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tb{flex:1;min-width:104px;padding:8px 12px;border:none;background:transparent;color:var(--muted);
+  font-family:var(--body);font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;transition:all .2s;
+  white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;}
+.tb.on{background:linear-gradient(135deg,rgba(0,229,255,.12),rgba(124,58,237,.12));color:var(--accent);border:1px solid rgba(0,229,255,.18);}
+.tb:hover:not(.on){color:var(--text);background:var(--s2);}
+
+/* PANELS */
+.pn{display:none;}.pn.on{display:block;animation:fadeIn .25s ease;}
+
+/* CARD */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:14px;}
+.ct{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:5px;}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+label{font-size:11px;color:var(--muted);letter-spacing:.5px;font-weight:600;}
+input.fi,select.fi{
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:9px 12px;color:var(--text);font-family:var(--body);font-size:14px;
+  outline:none;transition:border-color .2s;width:100%;
+}
+input.fi:focus,select.fi:focus{border-color:var(--accent);}
+input.fi::placeholder{color:var(--muted);}
+
+/* BUTTONS */
+.btn{padding:9px 20px;border:none;border-radius:8px;font-family:var(--body);font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+.btn-p{background:linear-gradient(135deg,var(--accent),#0284c7);color:#000;}
+.btn-p:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-s{background:var(--s2);border:1px solid var(--border);color:var(--text);}
+.btn-s:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:5px 11px;font-size:11px;}
+.btn-d{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--red);}
+.btn-pay{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--gold);font-size:12px;padding:6px 14px;}
+.btn-pay:hover{background:rgba(245,158,11,.22);}
+
+/* TABLE */
+.tw{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--s2);padding:11px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--border);}
+td{padding:11px 14px;border-bottom:1px solid rgba(30,45,71,.4);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,229,255,.01);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:700;white-space:nowrap;}
+.bg{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2);}
+.br{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);}
+.by{background:rgba(245,158,11,.1);color:var(--gold);border:1px solid rgba(245,158,11,.2);}
+.bx{background:rgba(78,96,128,.12);color:var(--muted);border:1px solid rgba(78,96,128,.18);}
+.bb{background:rgba(0,229,255,.08);color:var(--accent);border:1px solid rgba(0,229,255,.18);}
+
+.ctag{font-family:var(--mono);font-size:11px;letter-spacing:1px;
+  background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.14);
+  color:var(--accent);padding:3px 9px;border-radius:5px;cursor:pointer;transition:all .18s;}
+.ctag:hover{background:rgba(0,229,255,.14);}
+.ctag.nc{cursor:default;}.ctag.nc:hover{background:rgba(0,229,255,.07);}
+
+.mn{font-family:var(--mono);font-weight:700;}
+.cg{color:var(--green);}.co{color:var(--gold);}.cm{color:var(--muted);}
+
+/* RATE WIDGET */
+.rw{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+.rb{display:inline-flex;align-items:baseline;gap:3px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:7px 14px;font-family:var(--mono);font-size:26px;font-weight:700;color:var(--gold);line-height:1;}
+.rb span{font-size:13px;color:var(--muted);}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--gold);cursor:pointer;}
+
+/* LB */
+.lbi{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+.lbi:first-child{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04);}
+.lbi:nth-child(2){border-color:rgba(148,163,184,.2);}
+.lbi:nth-child(3){border-color:rgba(180,83,9,.2);}
+.lbr{font-family:var(--mono);font-size:20px;font-weight:700;width:30px;text-align:center;flex-shrink:0;}
+
+/* LOG */
+.li{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;}
+.ld{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.lt{color:var(--muted);font-size:10px;font-family:var(--mono);white-space:nowrap;margin-left:auto;padding-left:8px;}
+
+.two{display:grid;grid-template-columns:2fr 1fr;gap:14px;}
+.thr{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:900px){.two,.thr{grid-template-columns:1fr;}}
+
+.ib{background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:14px;display:flex;gap:8px;line-height:1.5;}
+.emp{text-align:center;padding:36px;color:var(--muted);font-size:13px;}
+.emp .ic{font-size:26px;margin-bottom:8px;}
+.dvd{border:none;border-top:1px solid var(--border);margin:12px 0;}
+
+/* TOAST */
+#toasts{position:fixed;top:60px;right:16px;z-index:500;display:flex;flex-direction:column;gap:7px;pointer-events:none;}
+.toast{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;min-width:240px;max-width:320px;font-size:13px;line-height:1.4;display:flex;align-items:flex-start;gap:9px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:tIn .25s ease;pointer-events:all;}
+.toast.success{border-left:3px solid var(--green);}
+.toast.error  {border-left:3px solid var(--red);}
+.toast.warning{border-left:3px solid var(--gold);}
+.toast.info   {border-left:3px solid var(--accent);}
+@keyframes tIn {from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(12px)}}
+
+/* ─── ADMIN PIN LOCK ─── */
+.pin-overlay{
+  position:fixed;inset:0;background:rgba(7,9,15,.97);backdrop-filter:blur(16px);
+  z-index:300;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.pin-overlay.show{opacity:1;pointer-events:all;}
+.pin-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:24px;
+  padding:44px 40px;width:100%;max-width:360px;text-align:center;
+  box-shadow:0 32px 80px rgba(0,0,0,.7);
+  animation:pinPop .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pinPop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.pin-icon{
+  width:64px;height:64px;margin:0 auto 16px;border-radius:50%;font-size:28px;
+  background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(0,229,255,.1));
+  border:2px solid rgba(124,58,237,.25);
+  display:flex;align-items:center;justify-content:center;
+}
+.pin-title{font-size:20px;font-weight:800;margin-bottom:6px;}
+.pin-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:20px;}
+.pin-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--border);background:transparent;transition:all .2s;
+}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px rgba(0,229,255,.4);}
+.pin-dot.err   {background:var(--red);  border-color:var(--red);  box-shadow:0 0 10px rgba(239,68,68,.4);}
+.pin-err-msg{font-size:12px;color:var(--red);min-height:20px;margin-bottom:8px;font-weight:600;}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.np{
+  background:var(--s2);border:1px solid var(--border);border-radius:12px;
+  padding:15px;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text);
+  cursor:pointer;transition:all .15s;user-select:none;border:none;
+}
+.np:hover{background:var(--s3);color:var(--accent);}
+.np:active{transform:scale(.92);}
+.np.zero{grid-column:2;}
+.np.del{
+  background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18)!important;color:var(--red);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.np.del:hover{background:rgba(239,68,68,.18);}
+.pin-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+/* session badge */
+.sbadge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);
+  border-radius:8px;padding:4px 12px;font-size:11px;color:var(--green);
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.sbadge:hover{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:var(--red);}
+.sbadge .stimer{font-family:var(--mono);font-weight:700;}
+/* lock indicator on admin btn */
+.lock-icon{font-size:11px;opacity:.6;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .4s ease;}
+
+/* ─── MEMBER PORTAL ─── */
+#pg-member{
+  display:none;min-height:100vh;padding:80px 20px 40px;
+  align-items:center;justify-content:center;flex-direction:column;
+}
+#pg-member.on{display:flex;animation:fadeIn .3s ease;}
+
+.member-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:24px;
+  padding:36px;width:100%;max-width:520px;position:relative;
+  box-shadow:0 24px 80px rgba(0,0,0,.5);
+}
+.member-card::before{
+  content:'';position:absolute;inset:0;border-radius:24px;padding:1px;
+  background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(0,229,255,.06),transparent 60%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+}
+.member-header{text-align:center;margin-bottom:28px;}
+.member-avatar{
+  width:64px;height:64px;border-radius:50%;margin:0 auto 14px;
+  background:linear-gradient(135deg,var(--accent),var(--green));
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:800;color:#000;
+  box-shadow:0 0 24px rgba(0,229,255,.2);
+}
+.member-name{font-size:22px;font-weight:800;margin-bottom:4px;}
+.member-code{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:13px;color:var(--accent);
+  background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.15);
+  border-radius:8px;padding:4px 12px;letter-spacing:2px;
+}
+/* big stat boxes */
+.mstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 0;}
+.mstat{
+  background:var(--s2);border:1px solid var(--border);border-radius:16px;
+  padding:18px;text-align:center;position:relative;overflow:hidden;
+}
+.mstat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--mbar);}
+.mstat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.mstat-value{font-family:var(--mono);font-size:clamp(22px,5vw,32px);font-weight:700;line-height:1;}
+.mstat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* orders timeline */
+.m-orders-title{
+  font-size:10px;font-weight:700;color:var(--accent);letter-spacing:2px;
+  text-transform:uppercase;margin:24px 0 12px;display:flex;align-items:center;gap:8px;
+}
+.m-orders-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.m-order-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;
+  background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;
+}
+.m-order-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.m-order-info{flex:1;}
+.m-order-amt{font-size:13px;font-weight:600;}
+.m-order-date{font-size:11px;color:var(--muted);margin-top:1px;}
+.m-order-comm{font-family:var(--mono);font-weight:700;color:var(--green);font-size:13px;}
+
+/* copy link popup */
+.copy-link-box{
+  background:var(--s2);border:1px solid rgba(0,229,255,.2);border-radius:12px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;margin-top:20px;
+}
+.copy-link-url{
+  flex:1;font-family:var(--mono);font-size:11px;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.copy-link-btn{
+  background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.2);
+  border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;
+  color:var(--accent);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;
+}
+.copy-link-btn:hover{background:rgba(0,229,255,.2);}
+
+/* admin: generate link button */
+.btn-link{
+  background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(0,229,255,.08));
+  border:1px solid rgba(16,185,129,.25);color:var(--green);
+  font-size:11px;padding:5px 11px;
+}
+.btn-link:hover{background:rgba(16,185,129,.25);}
+</style>
+</head>
+<body>
+
+<!-- ─── MODE BAR ─── -->
+<div class="mode-bar">
+  <div class="mode-bar-left">
+    <div class="app-logo">◈ REF/COMM</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div id="session-badge" style="display:none" class="sbadge" onclick="adminLock()" title="คลิกเพื่อล็อก">
+      🔓 Admin &nbsp;<span class="stimer" id="session-timer">--:--</span>&nbsp; <span style="font-size:10px;opacity:.7">คลิกล็อก</span>
+    </div>
+    <div class="mode-toggle">
+      <button class="mode-btn on" id="btn-staff" onclick="setMode('staff')">🏷️ พนักงาน</button>
+      <button class="mode-btn"   id="btn-admin" onclick="setMode('admin')">⚙️ Admin <span class="lock-icon" id="lock-icon">🔒</span></button>
+    </div>
+
+<!-- ─── PIN OVERLAY ─── -->
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-card" id="pin-card">
+    <div class="pin-icon">🔐</div>
+    <div class="pin-title">Admin Access</div>
+    <div class="pin-sub">กรอก PIN 4 หลักเพื่อเข้าสู่หน้า Admin</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-err-msg" id="pin-err"></div>
+    <div class="numpad">
+      <button class="np" onclick="pinInput('1')">1</button>
+      <button class="np" onclick="pinInput('2')">2</button>
+      <button class="np" onclick="pinInput('3')">3</button>
+      <button class="np" onclick="pinInput('4')">4</button>
+      <button class="np" onclick="pinInput('5')">5</button>
+      <button class="np" onclick="pinInput('6')">6</button>
+      <button class="np" onclick="pinInput('7')">7</button>
+      <button class="np" onclick="pinInput('8')">8</button>
+      <button class="np" onclick="pinInput('9')">9</button>
+      <button class="np zero" onclick="pinInput('0')">0</button>
+      <button class="np del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-hint" id="pin-hint">PIN เริ่มต้น: <b style="color:var(--accent);font-family:var(--mono)">1234</b> &nbsp;·&nbsp; เปลี่ยนได้ในหน้า Admin</div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<!-- ══════════════════════════════
+     MEMBER PORTAL PAGE
+══════════════════════════════ -->
+<div id="pg-member" class="page" style="display:none;align-items:center;justify-content:center;flex-direction:column;padding:80px 20px 40px;">
+  <div class="member-card" id="member-card"></div>
+</div>
+
+<!-- ══════════════════════════════
+     STAFF PAGE
+══════════════════════════════ -->
+<div id="pg-staff" class="page on">
+  <div class="staff-card">
+    <div class="staff-logo">
+      <div class="staff-logo-icon">🏷️</div>
+      <div>
+        <div class="staff-logo-text">บันทึกออเดอร์</div>
+        <div class="staff-logo-sub">Staff Order Entry · กรอกแค่รหัส + ยอดซื้อ</div>
+      </div>
+    </div>
+    <hr class="staff-divider">
+
+    <div class="sec-label">🔑 รหัสผู้แนะนำ <span style="font-size:9px;color:var(--muted);text-transform:none;letter-spacing:0">(ไม่บังคับ)</span></div>
+    <input class="ref-input" id="s-ref" type="text" placeholder="REF-XXXXXX" maxlength="10"
+      autocomplete="off" spellcheck="false"
+      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');onRefInput()">
+    <div class="ref-status empty" id="s-ref-status">
+      <span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>
+    </div>
+
+    <div class="sec-label">💰 ยอดซื้อ <span style="font-size:9px;color:var(--red);text-transform:none;letter-spacing:0">*จำเป็น</span></div>
+    <div class="amt-wrap">
+      <span class="amt-currency">฿</span>
+      <input class="amt-input" id="s-amt" type="number" placeholder="0" min="1" oninput="onAmtInput()">
+      <span class="amt-unit">บาท</span>
+    </div>
+    <div class="quick-row">
+      <span class="qa" onclick="setAmt(500,this)">500</span>
+      <span class="qa" onclick="setAmt(890,this)">890</span>
+      <span class="qa" onclick="setAmt(1290,this)">1,290</span>
+      <span class="qa" onclick="setAmt(1500,this)">1,500</span>
+      <span class="qa" onclick="setAmt(2200,this)">2,200</span>
+      <span class="qa" onclick="setAmt(3500,this)">3,500</span>
+    </div>
+
+    <div class="comm-preview hidden" id="s-comm">
+      <div>
+        <div style="font-size:11px;color:var(--muted)">ค่าคอมที่จะได้รับ</div>
+        <div style="font-size:14px;font-weight:700;margin-top:2px" id="s-comm-name">—</div>
+      </div>
+      <div style="font-size:18px;color:var(--muted)">→</div>
+      <div style="text-align:right">
+        <div class="comm-big" id="s-comm-amt">฿0</div>
+        <div class="comm-sub" id="s-comm-pct">2%</div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="s-submit" disabled onclick="staffSubmit()">
+      ✦ บันทึกออเดอร์
+    </button>
+  </div>
+
+  <!-- RECENT -->
+  <div class="recent-wrap" id="s-recent" style="display:none;margin-top:14px;">
+    <div class="recent-title">ออเดอร์ที่บันทึกแล้ววันนี้</div>
+    <div id="s-recent-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     ADMIN PAGE
+══════════════════════════════ -->
+<div id="pg-admin" class="page">
+  <div class="awrap">
+    <!-- STATS -->
+    <div class="stats">
+      <div class="sc" style="--bar:linear-gradient(90deg,var(--accent),#0284c7)"><div class="sl">👥 สมาชิก</div><div class="sv" id="a-s0">0</div></div>
+      <div class="sc" style="--bar:linear-gradient(90deg,var(--green),#059669)"><div class="sl">🛒 ออเดอร์</div><div class="sv" id="a-s1">0</div></div>
+      <div class="sc" style="--bar:linear-gradient(90deg,var(--gold),#d97706)"><div class="sl">💰 ยอดขายรวม</div><div class="sv" id="a-s2">0</div><div class="ss">บาท</div></div>
+      <div class="sc" style="--bar:linear-gradient(90deg,#f59e0b,#f97316)"><div class="sl">⏳ รอจ่าย</div><div class="sv co" id="a-s3">0</div><div class="ss">บาท</div></div>
+      <div class="sc" style="--bar:linear-gradient(90deg,var(--green),var(--accent))"><div class="sl">✅ จ่ายแล้ว</div><div class="sv cg" id="a-s4">0</div><div class="ss">บาท</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tb on" onclick="aTab('users')">👤 สมาชิก</button>
+      <button class="tb"    onclick="aTab('orders')">📋 ออเดอร์</button>
+      <button class="tb"    onclick="aTab('comm')">💸 ค่าคอม</button>
+      <button class="tb"    onclick="aTab('board')">🏆 Leaderboard</button>
+    </div>
+
+    <!-- USERS -->
+    <div class="pn on" id="pn-users">
+      <div class="card">
+        <div class="ct">➕ เพิ่มสมาชิกใหม่</div>
+        <div class="grid2">
+          <div class="fg"><label>ชื่อ-นามสกุล</label><input class="fi" id="a-un" placeholder="สมชาย ใจดี"></div>
+          <div class="fg"><label>อีเมล</label><input class="fi" id="a-ue" type="email" placeholder="email@example.com"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-p" onclick="addUser()">✦ เพิ่มสมาชิก + สร้างรหัส</button>
+          <button class="btn btn-s" onclick="loadDemo()">⚡ โหลดตัวอย่าง</button>
+          <button class="btn btn-d btn-sm" style="margin-left:auto" onclick="clearAll()">🗑 ล้างทั้งหมด</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">📊 รายชื่อสมาชิก</div>
+        <div class="rw">
+          <div class="rb" id="a-rb">2<span>%</span></div>
+          <div style="flex:1;min-width:120px">
+            <input type="range" id="a-rs" min="0.5" max="20" step="0.5" value="2" oninput="setRate(+this.value)">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px"><span>0.5%</span><span>20%</span></div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <button class="btn btn-s btn-sm" onclick="setRate(1)">1%</button>
+            <button class="btn btn-s btn-sm" onclick="setRate(2)">2%</button>
+            <button class="btn btn-s btn-sm" onclick="setRate(5)">5%</button>
+            <button class="btn btn-s btn-sm" onclick="setRate(10)">10%</button>
+          </div>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>ID</th><th>ชื่อ / อีเมล</th><th>Referral Code</th><th>ออเดอร์</th><th>ยอดขาย</th><th>ค่าคอมสะสม</th><th>รอจ่าย</th><th>จ่ายแล้ว</th><th>ลิ้งสมาชิก</th><th></th></tr></thead>
+            <tbody id="a-tb-u"></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- PIN CHANGE -->
+      <div class="card">
+        <div class="ct">🔐 ความปลอดภัย — เปลี่ยน Admin PIN</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div class="fg" style="flex:1;min-width:130px">
+            <label>PIN ปัจจุบัน</label>
+            <input class="fi" id="pin-old" type="password" maxlength="4" placeholder="••••" style="font-family:var(--mono);letter-spacing:6px;font-size:18px;text-align:center">
+          </div>
+          <div class="fg" style="flex:1;min-width:130px">
+            <label>PIN ใหม่ (4 หลัก)</label>
+            <input class="fi" id="pin-new" type="password" maxlength="4" placeholder="••••" style="font-family:var(--mono);letter-spacing:6px;font-size:18px;text-align:center">
+          </div>
+          <div class="fg" style="flex:1;min-width:130px">
+            <label>ยืนยัน PIN ใหม่</label>
+            <input class="fi" id="pin-new2" type="password" maxlength="4" placeholder="••••" style="font-family:var(--mono);letter-spacing:6px;font-size:18px;text-align:center">
+          </div>
+          <button class="btn btn-p" onclick="changePin()">🔐 บันทึก PIN ใหม่</button>
+        </div>
+        <div id="pin-change-msg" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+      </div>
+    </div>
+    <div class="pn" id="pn-orders">
+      <div class="card">
+        <div class="ct">📋 ประวัติออเดอร์ทั้งหมด</div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>#</th><th>เวลา</th><th>ยอดซื้อ</th><th>รหัสที่ใช้</th><th>ผู้แนะนำ</th><th>ค่าคอม</th><th>อัตรา</th><th>สถานะ</th></tr></thead>
+            <tbody id="a-tb-o"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMISSION -->
+    <div class="pn" id="pn-comm">
+      <div class="card">
+        <div class="ct">💸 สรุปค่าคอมรายบุคคล</div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>สมาชิก</th><th>Code</th><th>ออเดอร์</th><th>ยอดขาย</th><th>ค่าคอมสะสม</th><th>รอจ่าย</th><th>จ่ายแล้ว</th><th></th></tr></thead>
+            <tbody id="a-tb-c"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">🧾 ประวัติการจ่าย</div>
+        <div id="a-plog"><div class="emp"><div class="ic">🧾</div>ยังไม่มีการจ่ายเงิน</div></div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="pn" id="pn-board">
+      <div class="two">
+        <div>
+          <div class="card">
+            <div class="ct">🏆 อันดับ (ตามค่าคอมสะสม)</div>
+            <div id="a-lb"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="ct">📈 กิจกรรมล่าสุด</div>
+            <div id="a-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="sov" id="sov">
+  <div class="scard">
+    <div class="sicon">✅</div>
+    <div class="stitle">บันทึกสำเร็จ!</div>
+    <div class="ssub" id="sov-sub"></div>
+    <div class="rcpt" id="sov-rcpt"></div>
+    <button class="next-btn" onclick="staffReset()">+ บันทึกออเดอร์ถัดไป</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// SINGLE SHARED DATA STORE
+// ข้อมูลทุกอย่างอยู่ที่นี่ที่เดียว
+// ทั้งพนักงานและ Admin อ่าน/เขียนที่เดียวกัน
+// ════════════════════════════════════════════
+let DB = {
+  users:   [],   // สมาชิก
+  orders:  [],   // ออเดอร์ทั้งหมด
+  payouts: [],   // ประวัติการจ่าย
+  log:     [],   // activity log
+  rate:    2     // อัตราค่าคอม %
+};
+
+// ─── UTILS ───────────────────────────────────
+function fmt(n){ return(+n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmti(n){ return(+n).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function ft(ts){ return new Date(ts).toLocaleString('th-TH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+function calcComm(amt){ return Math.round(amt * DB.rate * 100) / 10000; }
+function mkCode(){
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s='REF-'; for(let i=0;i<6;i++) s+=c[Math.random()*c.length|0]; return s;
+}
+function uniqCode(){ let c,t=0; do{c=mkCode();t++;}while(DB.users.some(u=>u.refCode===c)&&t<200); return c; }
+
+function toast(msg, type='success'){
+  const ic={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.innerHTML=`<span style="flex-shrink:0">${ic[type]}</span><span style="flex:1">${msg}</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{ el.style.animation='tOut .25s ease forwards'; setTimeout(()=>el.remove(),260); },3500);
+}
+function addLog(msg,c='green'){ DB.log.unshift({msg,c,ts:Date.now()}); if(DB.log.length>60)DB.log.pop(); }
+
+// ════════════════════════════════════════════
+// PIN LOCK SYSTEM
+// ════════════════════════════════════════════
+const DEFAULT_PIN = '1234';
+let ADMIN_PIN     = DEFAULT_PIN;   // เปลี่ยนได้ผ่านหน้า Admin
+let adminUnlocked = false;         // สถานะปลดล็อกในเซสชั่นนี้
+let sessionExpiry = 0;             // timestamp หมดอายุ
+let sessionTimer  = null;
+const SESSION_MINUTES = 30;        // หมดเวลาอัตโนมัติ (นาที)
+
+let pinBuffer = '';
+let pinLocked = false;  // ป้องกัน spam ตอน error
+
+function showPinOverlay() {
+  pinBuffer = '';
+  pinLocked = false;
+  updatePinDots();
+  document.getElementById('pin-err').textContent = '';
+  document.getElementById('pin-overlay').classList.add('show');
+  document.getElementById('pin-hint').style.display = ADMIN_PIN === DEFAULT_PIN ? '' : 'none';
+}
+function hidePinOverlay() {
+  document.getElementById('pin-overlay').classList.remove('show');
+}
+
+function pinInput(digit) {
+  if (pinLocked || pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(checkPin, 120);  // เล็กน้อยให้ dot 4 แสดงก่อน
+  }
+}
+function pinDel() {
+  if (pinLocked) return;
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pin-err').textContent = '';
+}
+
+function updatePinDots(state='') {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('pd'+i);
+    d.className = 'pin-dot';
+    if (state === 'err') d.classList.add('err');
+    else if (i < pinBuffer.length) d.classList.add('filled');
+  }
+}
+
+function checkPin() {
+  if (pinBuffer === ADMIN_PIN) {
+    // ✅ ถูก
+    updatePinDots('ok');
+    adminUnlocked = true;
+    startSession();
+    hidePinOverlay();
+    showAdminPage();
+    toast('🔓 ยินดีต้อนรับ Admin', 'success');
+  } else {
+    // ❌ ผิด
+    pinLocked = true;
+    updatePinDots('err');
+    const msg = document.getElementById('pin-err');
+    msg.textContent = '❌ PIN ไม่ถูกต้อง กรุณาลองใหม่';
+    document.getElementById('pin-card').classList.add('shake');
+    setTimeout(() => {
+      document.getElementById('pin-card').classList.remove('shake');
+      pinBuffer = '';
+      pinLocked = false;
+      updatePinDots();
+      msg.textContent = '';
+    }, 800);
+  }
+}
+
+// keyboard support
+document.addEventListener('keydown', e => {
+  const overlay = document.getElementById('pin-overlay');
+  if (!overlay.classList.contains('show')) return;
+  if (e.key >= '0' && e.key <= '9') pinInput(e.key);
+  if (e.key === 'Backspace') pinDel();
+  if (e.key === 'Escape') { hidePinOverlay(); setMode('staff'); }
+});
+
+// ─── SESSION TIMER ─────────────────────────
+function startSession() {
+  sessionExpiry = Date.now() + SESSION_MINUTES * 60 * 1000;
+  if (sessionTimer) clearInterval(sessionTimer);
+  document.getElementById('session-badge').style.display = '';
+  document.getElementById('lock-icon').textContent = '🔓';
+  sessionTimer = setInterval(tickSession, 1000);
+  tickSession();
+}
+
+function tickSession() {
+  const remaining = sessionExpiry - Date.now();
+  if (remaining <= 0) { adminLock(); return; }
+  const m = Math.floor(remaining / 60000);
+  const s = Math.floor((remaining % 60000) / 1000);
+  document.getElementById('session-timer').textContent =
+    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function adminLock() {
+  adminUnlocked = false;
+  if (sessionTimer) clearInterval(sessionTimer);
+  document.getElementById('session-badge').style.display = 'none';
+  document.getElementById('lock-icon').textContent = '🔒';
+  setMode('staff');
+  toast('🔒 ล็อก Admin แล้ว', 'info');
+}
+
+// ─── CHANGE PIN ─────────────────────────────
+function changePin() {
+  const old  = document.getElementById('pin-old').value.trim();
+  const nw   = document.getElementById('pin-new').value.trim();
+  const nw2  = document.getElementById('pin-new2').value.trim();
+  const msg  = document.getElementById('pin-change-msg');
+  if (old !== ADMIN_PIN)     { msg.innerHTML='<span style="color:var(--red)">❌ PIN ปัจจุบันไม่ถูกต้อง</span>'; return; }
+  if (!/^\d{4}$/.test(nw))  { msg.innerHTML='<span style="color:var(--red)">❌ PIN ต้องเป็นตัวเลข 4 หลัก</span>'; return; }
+  if (nw !== nw2)            { msg.innerHTML='<span style="color:var(--red)">❌ PIN ใหม่ไม่ตรงกัน</span>'; return; }
+  ADMIN_PIN = nw;
+  ['pin-old','pin-new','pin-new2'].forEach(id => document.getElementById(id).value='');
+  msg.innerHTML='<span style="color:var(--green)">✅ เปลี่ยน PIN สำเร็จ!</span>';
+  document.getElementById('pin-hint').style.display = 'none';
+  toast('🔐 เปลี่ยน PIN Admin สำเร็จ', 'success');
+  setTimeout(() => msg.innerHTML='', 3000);
+}
+
+// ════════════════════════════════════════════
+// MODE SWITCHER (with PIN guard)
+// ════════════════════════════════════════════
+function setMode(m) {
+  if (m === 'admin') {
+    if (!adminUnlocked) { showPinOverlay(); return; }
+    showAdminPage(); return;
+  }
+  // staff
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-staff').classList.add('on');
+  document.getElementById('btn-staff').classList.add('on');
+  document.getElementById('btn-admin').classList.remove('on');
+}
+
+function showAdminPage() {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-admin').classList.add('on');
+  document.getElementById('btn-admin').classList.add('on');
+  document.getElementById('btn-staff').classList.remove('on');
+  renderAdmin();
+}
+
+// ─── ADMIN TABS ────────────────────────────
+function aTab(t){
+  document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pn-'+t).classList.add('on');
+  const idx=['users','orders','comm','board'].indexOf(t);
+  document.querySelectorAll('.tb')[idx].classList.add('on');
+}
+
+// ─── RATE ──────────────────────────────────
+function setRate(v){
+  DB.rate=v;
+  document.getElementById('a-rs').value=v;
+  document.getElementById('a-rb').innerHTML=v+'<span>%</span>';
+  updateStaffPreview();
+}
+
+// ══════════════════════════════════════════
+// STAFF FUNCTIONS
+// ══════════════════════════════════════════
+let staffRef = null;
+let staffSession = [];
+
+function onRefInput(){
+  const code = document.getElementById('s-ref').value.trim();
+  const inp  = document.getElementById('s-ref');
+  const stat = document.getElementById('s-ref-status');
+
+  if(!code){
+    staffRef=null; inp.className='ref-input';
+    stat.className='ref-status empty';
+    stat.innerHTML='<span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>';
+    updateStaffPreview(); return;
+  }
+  if(code.length<10){
+    staffRef=null; inp.className='ref-input';
+    stat.className='ref-status typing';
+    stat.innerHTML=`<span style="color:var(--muted);font-size:12px">กรอกให้ครบ (${code.length}/10)...</span>`;
+    updateStaffPreview(); return;
+  }
+
+  const found = DB.users.find(u=>u.refCode===code);
+  staffRef = found||null;
+
+  if(found){
+    inp.className='ref-input valid';
+    stat.className='ref-status found';
+    stat.innerHTML=`
+      <div class="ref-avatar">${found.name.charAt(0)}</div>
+      <div>
+        <div style="font-weight:700;font-size:14px">${found.name}</div>
+        <div style="font-size:11px;color:var(--muted)">แนะนำไป ${found.orderCount||0} ออเดอร์ · สะสม ฿${fmt(found.totalComm||0)}</div>
+      </div>`;
+  } else {
+    inp.className='ref-input invalid';
+    stat.className='ref-status notfound';
+    stat.innerHTML=`<span style="font-size:16px">❌</span><span style="color:var(--red);font-size:13px;font-weight:600">ไม่พบรหัสนี้ในระบบ</span>`;
+  }
+  updateStaffPreview();
+}
+
+function onAmtInput(){
+  document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));
+  updateStaffPreview();
+}
+function setAmt(v,el){
+  document.getElementById('s-amt').value=v;
+  document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));
+  el.classList.add('on');
+  updateStaffPreview();
+}
+
+function updateStaffPreview(){
+  const amt=parseFloat(document.getElementById('s-amt').value)||0;
+  document.getElementById('s-submit').disabled=!(amt>0);
+  const prev=document.getElementById('s-comm');
+  if(amt>0 && staffRef){
+    const c=calcComm(amt);
+    document.getElementById('s-comm-name').textContent=staffRef.name;
+    document.getElementById('s-comm-amt').textContent='฿'+fmt(c);
+    document.getElementById('s-comm-pct').textContent=DB.rate+'% ของ ฿'+fmti(amt);
+    prev.classList.remove('hidden');
+  } else {
+    prev.classList.add('hidden');
+  }
+}
+
+function staffSubmit(){
+  const amt  = parseFloat(document.getElementById('s-amt').value);
+  const code = document.getElementById('s-ref').value.trim();
+  if(!amt||amt<=0){ toast('กรุณากรอกยอดซื้อ','error'); return; }
+
+  // หา user จาก DB ล่าสุดเสมอ
+  let ref = staffRef ? DB.users.find(u=>u.id===staffRef.id) : null;
+  let commission=0, st='no_code';
+
+  if(code && !ref){
+    // มีรหัสแต่หาไม่เจอ
+    st='invalid';
+  } else if(ref){
+    commission=calcComm(amt);
+    ref.totalComm   =(ref.totalComm||0)  +commission;
+    ref.pendingComm =(ref.pendingComm||0)+commission;
+    ref.totalSales  =(ref.totalSales||0) +amt;
+    ref.orderCount  =(ref.orderCount||0) +1;
+    st='valid';
+  }
+
+  const order={
+    id:DB.orders.length+1, ts:Date.now(),
+    amt, refCode:code||'', refName:ref?ref.name:'',
+    commission, rate:DB.rate, st
+  };
+  DB.orders.push(order);
+  staffSession.unshift(order);
+
+  if(st==='valid'){
+    addLog(`💰 <b>${ref.name}</b> ได้รับ <b style="color:var(--green)">฿${fmt(commission)}</b> จากออเดอร์ ฿${fmt(amt)}`,'green');
+    toast(`${ref.name} ได้ค่าคอม ฿${fmt(commission)}`);
+  } else {
+    addLog(`🛒 บันทึกออเดอร์ ฿${fmt(amt)} ${code?'(รหัสผิด)':'(ไม่มีรหัส)'}`,'gray');
+  }
+
+  showSuccess(order, ref);
+}
+
+function showSuccess(order, ref){
+  const rows=[{l:'ยอดซื้อ',v:'฿'+fmt(order.amt),hl:false}];
+  if(ref){
+    rows.push({l:'รหัสผู้แนะนำ',v:order.refCode,hl:false});
+    rows.push({l:`ค่าคอม ${order.rate}% → ${ref.name}`,v:'+฿'+fmt(order.commission),hl:true});
+  }
+  document.getElementById('sov-rcpt').innerHTML=rows.map(r=>`
+    <div class="rrow ${r.hl?'hl':''}"><span class="rl">${r.l}</span><span class="rv">${r.v}</span></div>`).join('');
+  document.getElementById('sov-sub').textContent=ref
+    ?`ค่าคอม ฿${fmt(order.commission)} ทบยอดให้ ${ref.name} แล้ว`
+    :'บันทึกออเดอร์เรียบร้อย';
+  document.getElementById('sov').classList.add('show');
+  renderRecent();
+}
+
+function staffReset(){
+  document.getElementById('sov').classList.remove('show');
+  document.getElementById('s-ref').value='';
+  document.getElementById('s-amt').value='';
+  document.getElementById('s-ref').className='ref-input';
+  document.getElementById('s-ref-status').className='ref-status empty';
+  document.getElementById('s-ref-status').innerHTML='<span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>';
+  document.getElementById('s-comm').classList.add('hidden');
+  document.getElementById('s-submit').disabled=true;
+  document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));
+  staffRef=null;
+  document.getElementById('s-ref').focus();
+}
+
+function renderRecent(){
+  const wrap=document.getElementById('s-recent');
+  if(!staffSession.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  document.getElementById('s-recent-list').innerHTML=staffSession.slice(0,5).map(o=>{
+    const t=new Date(o.ts).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="ritem">
+      <div class="rdot" style="background:${o.commission>0?'var(--green)':'var(--muted)'}"></div>
+      <div class="rinfo">
+        <div class="rprod">฿${fmt(o.amt)} ${o.refCode?'· '+o.refCode:'· ไม่มีรหัส'}</div>
+        <div class="rmeta">${t}${o.refName?' · → '+o.refName:''}</div>
+      </div>
+      ${o.commission>0?`<div class="rcomm">+฿${fmt(o.commission)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// ADMIN FUNCTIONS
+// ══════════════════════════════════════════
+function addUser(){
+  const name =document.getElementById('a-un').value.trim();
+  const email=document.getElementById('a-ue').value.trim().toLowerCase();
+  if(!name||!email){toast('กรุณากรอกชื่อและอีเมล','error');return;}
+  if(!email.includes('@')){toast('อีเมลไม่ถูกต้อง','error');return;}
+  if(DB.users.some(u=>u.email===email)){toast('อีเมลนี้มีอยู่แล้ว','error');return;}
+  const id='U'+String(DB.users.length+1).padStart(3,'0');
+  const refCode=uniqCode();
+  DB.users.push({id,name,email,refCode,totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()});
+  document.getElementById('a-un').value='';
+  document.getElementById('a-ue').value='';
+  addLog(`➕ เพิ่ม <b>${name}</b> รหัส <code>${refCode}</code>`,'green');
+  toast(`เพิ่ม ${name} สำเร็จ — รหัส: ${refCode}`);
+  renderAdmin();
+}
+
+function delUser(id){
+  if(!confirm('ลบสมาชิกนี้?'))return;
+  DB.users=DB.users.filter(u=>u.id!==id);
+  renderAdmin();
+}
+
+function payout(uid){
+  const u=DB.users.find(u=>u.id===uid);
+  if(!u||!(u.pendingComm>0)){toast('ไม่มียอดรอจ่าย','warning');return;}
+  const a=u.pendingComm;
+  u.paidComm=(u.paidComm||0)+a; u.pendingComm=0;
+  DB.payouts.push({ts:Date.now(),uid,name:u.name,a});
+  addLog(`💳 จ่ายค่าคอม <b style="color:var(--green)">฿${fmt(a)}</b> ให้ <b>${u.name}</b>`,'green');
+  toast(`จ่าย ฿${fmt(a)} ให้ ${u.name} แล้ว`);
+  renderAdmin();
+}
+
+function copyCode(c){ navigator.clipboard.writeText(c).then(()=>toast(`คัดลอก ${c}`,'info')).catch(()=>{}); }
+
+// ── RENDER ADMIN ────────────────────────
+function renderAdmin(){
+  rStats(); rUsers(); rOrders(); rComm(); rBoard(); rLog(); rPlog();
+}
+
+function rStats(){
+  const gmv=DB.orders.reduce((s,o)=>s+o.amt,0);
+  const pen=DB.users.reduce((s,u)=>s+(u.pendingComm||0),0);
+  const pai=DB.users.reduce((s,u)=>s+(u.paidComm||0),0);
+  document.getElementById('a-s0').textContent=DB.users.length;
+  document.getElementById('a-s1').textContent=DB.orders.length;
+  document.getElementById('a-s2').textContent=fmti(gmv);
+  document.getElementById('a-s3').textContent=fmt(pen);
+  document.getElementById('a-s4').textContent=fmt(pai);
+}
+
+function rUsers(){
+  const tb=document.getElementById('a-tb-u');
+  if(!DB.users.length){tb.innerHTML='<tr><td colspan="10"><div class="emp"><div class="ic">👤</div>ยังไม่มีสมาชิก</div></td></tr>';return;}
+  tb.innerHTML=DB.users.map(u=>`
+    <tr>
+      <td><span class="mn cm" style="font-size:11px">${u.id}</span></td>
+      <td><b>${u.name}</b><br><span style="font-size:11px;color:var(--muted)">${u.email}</span></td>
+      <td><span class="ctag" onclick="copyCode('${u.refCode}')">📋 ${u.refCode}</span></td>
+      <td><span class="badge bx">${u.orderCount||0}</span></td>
+      <td class="mn co">฿${fmt(u.totalSales||0)}</td>
+      <td class="mn co">฿${fmt(u.totalComm||0)}</td>
+      <td class="mn" style="color:${(u.pendingComm||0)>0?'var(--gold)':'var(--muted)'}">฿${fmt(u.pendingComm||0)}</td>
+      <td class="mn cg">฿${fmt(u.paidComm||0)}</td>
+      <td><button class="btn btn-link btn-sm" onclick="copyMemberLink('${u.id}')">🔗 คัดลอกลิ้ง</button></td>
+      <td><button class="btn btn-d btn-sm" onclick="delUser('${u.id}')">ลบ</button></td>
+    </tr>`).join('');
+}
+
+function rOrders(){
+  const tb=document.getElementById('a-tb-o');
+  if(!DB.orders.length){tb.innerHTML='<tr><td colspan="8"><div class="emp"><div class="ic">🛒</div>ยังไม่มีออเดอร์</div></td></tr>';return;}
+  const sm={valid:'<span class="badge bg">✅ ใช้รหัส</span>',invalid:'<span class="badge br">❌ รหัสผิด</span>',no_code:'<span class="badge bx">➖ ไม่มีรหัส</span>'};
+  tb.innerHTML=[...DB.orders].reverse().map(o=>`
+    <tr>
+      <td class="mn cm" style="font-size:11px">#${o.id}</td>
+      <td class="mn cm" style="font-size:11px">${ft(o.ts)}</td>
+      <td class="mn co">฿${fmt(o.amt)}</td>
+      <td>${o.refCode?`<span class="ctag nc">${o.refCode}</span>`:'<span class="cm">—</span>'}</td>
+      <td>${o.refName?`<b>${o.refName}</b>`:'<span class="cm">—</span>'}</td>
+      <td>${o.commission>0?`<span class="mn cg">฿${fmt(o.commission)}</span>`:'<span class="cm">—</span>'}</td>
+      <td>${o.commission>0?`<span class="badge bb">${o.rate}%</span>`:'<span class="cm">—</span>'}</td>
+      <td>${sm[o.st]||''}</td>
+    </tr>`).join('');
+}
+
+function rComm(){
+  const tb=document.getElementById('a-tb-c');
+  const list=DB.users.filter(u=>(u.totalComm||0)>0).sort((a,b)=>b.totalComm-a.totalComm);
+  if(!list.length){tb.innerHTML='<tr><td colspan="8"><div class="emp"><div class="ic">💸</div>ยังไม่มีค่าคอม</div></td></tr>';return;}
+  tb.innerHTML=list.map(u=>`
+    <tr>
+      <td><b>${u.name}</b><br><span style="font-size:11px;color:var(--muted)">${u.email}</span></td>
+      <td><span class="ctag nc">${u.refCode}</span></td>
+      <td><span class="badge bb">${u.orderCount||0}</span></td>
+      <td class="mn">฿${fmt(u.totalSales||0)}</td>
+      <td class="mn co" style="font-size:15px">฿${fmt(u.totalComm||0)}</td>
+      <td class="mn" style="color:${(u.pendingComm||0)>0?'var(--gold)':'var(--muted)'};font-size:15px">฿${fmt(u.pendingComm||0)}</td>
+      <td class="mn cg">฿${fmt(u.paidComm||0)}</td>
+      <td>${(u.pendingComm||0)>0
+        ?`<button class="btn btn-pay" onclick="payout('${u.id}')">💳 จ่าย ฿${fmt(u.pendingComm)}</button>`
+        :`<span class="badge bg">จ่ายครบ</span>`}</td>
+    </tr>`).join('');
+}
+
+function rBoard(){
+  const el=document.getElementById('a-lb');
+  const list=[...DB.users].filter(u=>(u.totalComm||0)>0).sort((a,b)=>b.totalComm-a.totalComm);
+  if(!list.length){el.innerHTML='<div class="emp"><div class="ic">🏆</div>ยังไม่มีข้อมูล</div>';return;}
+  const medals=['🥇','🥈','🥉'];
+  const cols=['var(--gold)','#94a3b8','#b45309'];
+  el.innerHTML=list.slice(0,10).map((u,i)=>`
+    <div class="lbi">
+      <div class="lbr" style="color:${cols[i]||'var(--muted)'}">${medals[i]||i+1}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${u.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${u.refCode} · ${u.orderCount||0} ออเดอร์</div>
+      </div>
+      <div style="text-align:right">
+        <div class="mn co" style="font-size:20px">฿${fmt(u.totalComm||0)}</div>
+        ${(u.pendingComm||0)>0?`<div style="font-size:11px;color:var(--gold)">฿${fmt(u.pendingComm)} รอรับ</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function rLog(){
+  const el=document.getElementById('a-log');
+  const cm={green:'var(--green)',red:'var(--red)',yellow:'var(--gold)',gray:'var(--muted)'};
+  if(!DB.log.length){el.innerHTML='<div class="emp" style="padding:20px"><div class="ic">📈</div>ยังไม่มีกิจกรรม</div>';return;}
+  el.innerHTML=DB.log.slice(0,15).map(l=>`
+    <div class="li"><div class="ld" style="background:${cm[l.c]}"></div><div style="font-size:12px;flex:1;line-height:1.5">${l.msg}</div><div class="lt">${ft(l.ts)}</div></div>`).join('');
+}
+
+function rPlog(){
+  const el=document.getElementById('a-plog');
+  if(!DB.payouts.length){el.innerHTML='<div class="emp"><div class="ic">🧾</div>ยังไม่มีการจ่ายเงิน</div>';return;}
+  el.innerHTML=[...DB.payouts].reverse().map(p=>`
+    <div class="li"><div class="ld" style="background:var(--green)"></div><div style="font-size:13px;flex:1">จ่าย <b class="mn cg">฿${fmt(p.a)}</b> ให้ <b>${p.name}</b></div><div class="lt">${ft(p.ts)}</div></div>`).join('');
+}
+
+// ── DEMO DATA ──────────────────────────
+function loadDemo(){
+  DB={users:[],orders:[],payouts:[],log:[],rate:DB.rate};
+  const du=[
+    {n:'สมชาย ใจดี',   e:'somchai@demo.com'},
+    {n:'สมหญิง มีสุข', e:'somying@demo.com'},
+    {n:'มานี รักเรียน',e:'manee@demo.com'},
+    {n:'วิชัย ขยันดี', e:'wichai@demo.com'},
+  ];
+  du.forEach(u=>{
+    const id='U'+String(DB.users.length+1).padStart(3,'0');
+    DB.users.push({id,name:u.n,email:u.e,refCode:uniqCode(),totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()});
+  });
+  // demo orders
+  const do_=[
+    {amt:1500,ri:0},{amt:2200,ri:0},{amt:1290,ri:1},
+    {amt:3500,ri:0},{amt:890,ri:2},{amt:4800,ri:1},{amt:1500,ri:null},
+  ];
+  do_.forEach((o,i)=>{
+    const ref=o.ri!==null?DB.users[o.ri]:null;
+    const c=ref?calcComm(o.amt):0;
+    if(ref){ref.totalComm+=c;ref.pendingComm+=c;ref.totalSales+=o.amt;ref.orderCount+=1;}
+    DB.orders.push({id:i+1,ts:Date.now()-(do_.length-i)*3600000,amt:o.amt,
+      refCode:ref?ref.refCode:'',refName:ref?ref.name:'',
+      commission:c,rate:DB.rate,st:ref?'valid':'no_code'});
+  });
+  // pre-payout
+  const u0=DB.users[0];
+  const pp=calcComm(1500);
+  u0.paidComm+=pp;u0.pendingComm-=pp;
+  DB.payouts.push({ts:Date.now()-7200000,uid:u0.id,name:u0.name,a:pp});
+  addLog(`⚡ โหลดตัวอย่าง ${du.length} สมาชิก + ${do_.length} ออเดอร์`,'green');
+  toast('โหลดข้อมูลตัวอย่างสำเร็จ!','info');
+  renderAdmin();
+}
+
+function clearAll(){
+  if(!confirm('ล้างข้อมูลทั้งหมด?'))return;
+  DB={users:[],orders:[],payouts:[],log:[],rate:DB.rate};
+  renderAdmin(); toast('ล้างข้อมูลแล้ว','warning');
+}
+
+// ════════════════════════════════════════════
+// MEMBER PORTAL
+// ════════════════════════════════════════════
+
+// --- encode / decode ---
+function encodeMember(userId) {
+  const u = DB.users.find(u=>u.id===userId);
+  if (!u) return null;
+  // เก็บเฉพาะ orders ที่เกี่ยวกับ user นี้
+  const orders = DB.orders.filter(o=>o.refCode===u.refCode).map(o=>({
+    ts:o.ts, amt:o.amt, commission:o.commission, rate:o.rate
+  }));
+  const payload = {
+    id: u.id, name: u.name, refCode: u.refCode,
+    totalComm: u.totalComm||0,
+    pendingComm: u.pendingComm||0,
+    paidComm: u.paidComm||0,
+    totalSales: u.totalSales||0,
+    orderCount: u.orderCount||0,
+    orders,
+    generatedAt: Date.now()
+  };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
+
+function decodeMember(encoded) {
+  try {
+    return JSON.parse(decodeURIComponent(escape(atob(encoded))));
+  } catch { return null; }
+}
+
+// --- copy link ---
+function copyMemberLink(userId) {
+  const encoded = encodeMember(userId);
+  if (!encoded) { toast('ไม่พบสมาชิก','error'); return; }
+  const url = window.location.href.split('?')[0] + '?member=' + encoded;
+  navigator.clipboard.writeText(url)
+    .then(()=> toast('📋 คัดลอกลิ้งสมาชิกแล้ว — ส่งให้เจ้าของรหัสได้เลย','success'))
+    .catch(()=> {
+      // fallback: แสดง url ให้ copy เอง
+      prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url);
+    });
+}
+
+// --- render member page ---
+function renderMemberPage(data) {
+  // ซ่อน mode bar buttons ที่ไม่เกี่ยว
+  document.getElementById('btn-staff').style.display = 'none';
+  document.getElementById('btn-admin').style.display = 'none';
+
+  const card = document.getElementById('member-card');
+  const initial = data.name.charAt(0).toUpperCase();
+  const genDate = new Date(data.generatedAt).toLocaleDateString('th-TH',{day:'2-digit',month:'long',year:'numeric'});
+
+  // orders rows
+  const orderRows = data.orders.length
+    ? [...data.orders].sort((a,b)=>b.ts-a.ts).slice(0,10).map(o=>`
+        <div class="m-order-item">
+          <div class="m-order-dot"></div>
+          <div class="m-order-info">
+            <div class="m-order-amt">ยอดซื้อ ฿${fmt(o.amt)}</div>
+            <div class="m-order-date">${new Date(o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+          </div>
+          <div class="m-order-comm">+฿${fmt(o.commission)}</div>
+        </div>`).join('')
+    : `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">ยังไม่มีออเดอร์ผ่านรหัสของคุณ</div>`;
+
+  card.innerHTML = `
+    <div class="member-header">
+      <div class="member-avatar">${initial}</div>
+      <div class="member-name">${data.name}</div>
+      <div class="member-code">📋 ${data.refCode}</div>
+    </div>
+
+    <div class="mstats">
+      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--green),var(--accent))">
+        <div class="mstat-label">💸 ค่าคอมสะสมทั้งหมด</div>
+        <div class="mstat-value cg">฿${fmt(data.totalComm)}</div>
+        <div class="mstat-sub">จาก ${data.orderCount} ออเดอร์</div>
+      </div>
+      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--gold),#f97316)">
+        <div class="mstat-label">⏳ รอรับเงิน</div>
+        <div class="mstat-value co">฿${fmt(data.pendingComm)}</div>
+        <div class="mstat-sub">ยังไม่ได้โอน</div>
+      </div>
+      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--accent),var(--p2))">
+        <div class="mstat-label">✅ รับไปแล้ว</div>
+        <div class="mstat-value" style="color:var(--accent)">฿${fmt(data.paidComm)}</div>
+        <div class="mstat-sub">โอนแล้ว</div>
+      </div>
+      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--p2),var(--accent2))">
+        <div class="mstat-label">🛒 ยอดขายผ่านรหัส</div>
+        <div class="mstat-value cm">฿${fmt(data.totalSales)}</div>
+        <div class="mstat-sub">รวมทุกออเดอร์</div>
+      </div>
+    </div>
+
+    <div class="m-orders-title">📋 ประวัติออเดอร์ (10 ล่าสุด)</div>
+    ${orderRows}
+
+    <div style="margin-top:20px;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted);text-align:center;line-height:1.7">
+      ข้อมูล ณ วันที่ ${genDate}<br>
+      สอบถามยอดล่าสุดได้ที่แอดมิน
+    </div>
+  `;
+
+  // show page
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  const pg = document.getElementById('pg-member');
+  pg.style.display = 'flex';
+  pg.classList.add('on');
+  document.title = `ยอดค่าคอม — ${data.name}`;
+}
+
+// --- check URL on load ---
+function checkMemberUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get('member');
+  if (!encoded) return false;
+  const data = decodeMember(encoded);
+  if (!data) {
+    toast('ลิ้งไม่ถูกต้องหรือหมดอายุ','error');
+    return false;
+  }
+  renderMemberPage(data);
+  return true;
+}
+
+// ─── INIT ──────────────────────────────
+// ตรวจสอบ URL ก่อน — ถ้ามี ?member= แสดงหน้า member ทันที
+if (!checkMemberUrl()) {
+  loadDemo();
+}
+</script>
+</body>
+</html>
