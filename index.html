@@ -910,10 +910,10 @@ function onRefInput(){
     stat.innerHTML='<span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>';
     updateStaffPreview(); return;
   }
-  if(code.length<10){
+  if(code.length<5){
     staffRef=null; inp.className='ref-input';
     stat.className='ref-status typing';
-    stat.innerHTML=`<span style="color:var(--muted);font-size:12px">กรอกให้ครบ (${code.length}/10)...</span>`;
+    stat.innerHTML=`<span style="color:var(--muted);font-size:12px">กรอกให้ครบ (${code.length}/5)...</span>`;
     updateStaffPreview(); return;
   }
 
