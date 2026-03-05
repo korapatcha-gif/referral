@@ -508,6 +508,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     <div class="ref-status empty" id="s-ref-status">
       <span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>
     </div>
+    <div id="s-copy-link" style="display:none;margin-bottom:18px;">
+      <button onclick="staffCopyLink()" style="width:100%;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(0,229,255,.06));border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:10px 16px;color:var(--green);font-family:var(--body);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;">🔗 คัดลอกลิ้งยอดค่าคอมส่งให้สมาชิก</button>
+    </div>
 
     <div class="sec-label">💰 ยอดซื้อ <span style="font-size:9px;color:var(--red);text-transform:none;letter-spacing:0">*จำเป็น</span></div>
     <div class="amt-wrap">
@@ -975,18 +978,21 @@ function onRefInput(){
     staffRef=null; inp.className='ref-input';
     stat.className='ref-status empty';
     stat.innerHTML='<span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>';
+    document.getElementById('s-copy-link').style.display='none';
     updateStaffPreview(); return;
   }
   if(code.length<5){
     staffRef=null; inp.className='ref-input';
     stat.className='ref-status typing';
     stat.innerHTML=`<span style="color:var(--muted);font-size:12px">กรอกให้ครบ (${code.length}/5)...</span>`;
+    document.getElementById('s-copy-link').style.display='none';
     updateStaffPreview(); return;
   }
 
   const found = DB.users.find(u=>u.refCode===code);
   staffRef = found||null;
 
+  const copyBtn = document.getElementById('s-copy-link');
   if(found){
     inp.className='ref-input valid';
     stat.className='ref-status found';
@@ -996,10 +1002,12 @@ function onRefInput(){
         <div style="font-weight:700;font-size:14px">${found.name}</div>
         <div style="font-size:11px;color:var(--muted)">แนะนำไป ${found.orderCount||0} ออเดอร์ · สะสม ฿${fmt(found.totalComm||0)}</div>
       </div>`;
+    copyBtn.style.display='block';
   } else {
     inp.className='ref-input invalid';
     stat.className='ref-status notfound';
     stat.innerHTML=`<span style="font-size:16px">❌</span><span style="color:var(--red);font-size:13px;font-weight:600">ไม่พบรหัสนี้ในระบบ</span>`;
+    copyBtn.style.display='none';
   }
   updateStaffPreview();
 }
@@ -1092,6 +1100,30 @@ function showSuccess(order, ref){
   renderRecent();
 }
 
+function staffCopyLink() {
+  if (!staffRef) return;
+  const u = DB.users.find(u=>u.id===staffRef.id);
+  if (!u) { toast('ไม่พบสมาชิก','error'); return; }
+
+  const orders = DB.orders.filter(o=>o.refCode===u.refCode)
+    .map(o=>[Math.round(o.ts/1000), o.amt, o.commission, o.customerName||'']);
+  const p = {
+    n:u.name, r:u.refCode,
+    tc:u.totalComm||0, pc:u.pendingComm||0, pd:u.paidComm||0,
+    oc:u.orderCount||0, o:orders
+  };
+  const j = JSON.stringify(p);
+  const bytes = new TextEncoder().encode(j);
+  const b64 = btoa(String.fromCharCode(...bytes));
+  const encoded = b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const base = window.location.href.split('?')[0];
+  const url  = base + '?m=' + encoded;
+
+  navigator.clipboard.writeText(url)
+    .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + u.name + ' ได้เลย','success'))
+    .catch(()=> { prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url); });
+}
+
 function staffReset(){
   document.getElementById('sov').classList.remove('show');
   document.getElementById('s-cust').value='';
@@ -1103,6 +1135,7 @@ function staffReset(){
   document.getElementById('s-comm').classList.add('hidden');
   document.getElementById('s-submit').disabled=true;
   document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));
+  document.getElementById('s-copy-link').style.display='none';
   staffRef=null;
   document.getElementById('s-ref').focus();
 }
