@@ -1116,7 +1116,9 @@ function staffCopyLink() {
   const bytes = new TextEncoder().encode(j);
   const b64 = btoa(String.fromCharCode(...bytes));
   const encoded = b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  const base = window.location.href.split('?')[0];
+
+  // ใช้ origin + pathname เท่านั้น ไม่เอา query string เดิม
+  const base = window.location.origin + window.location.pathname;
   const url  = base + '?m=' + encoded;
 
   navigator.clipboard.writeText(url)
@@ -1507,7 +1509,7 @@ function copyMemberLink(userId) {
   const b64 = btoa(String.fromCharCode(...bytes));
   const encoded = b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 
-  const base = window.location.href.split('?')[0];
+  const base = window.location.origin + window.location.pathname;
   const url  = base + '?m=' + encoded;
 
   navigator.clipboard.writeText(url)
