@@ -688,6 +688,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     <div class="stitle">บันทึกสำเร็จ!</div>
     <div class="ssub" id="sov-sub"></div>
     <div class="rcpt" id="sov-rcpt"></div>
+    <div id="sov-copy-link" style="display:none;margin-bottom:10px;">
+      <button onclick="staffCopyLink()" style="width:100%;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(0,229,255,.06));border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:10px 16px;color:var(--green);font-family:var(--body);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;">🔗 คัดลอกลิ้งยอดค่าคอมส่งให้สมาชิก</button>
+    </div>
     <button class="next-btn" onclick="staffReset()">+ บันทึกออเดอร์ถัดไป</button>
   </div>
 </div>
@@ -1096,6 +1099,7 @@ function showSuccess(order, ref){
   document.getElementById('sov-sub').textContent=ref
     ?`ค่าคอม ฿${fmt(order.commission)} ทบยอดให้ ${ref.name} แล้ว`
     :'บันทึกออเดอร์เรียบร้อย';
+  document.getElementById('sov-copy-link').style.display = ref ? 'block' : 'none';
   document.getElementById('sov').classList.add('show');
   renderRecent();
 }
