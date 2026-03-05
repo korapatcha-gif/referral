@@ -693,23 +693,27 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 // ════════════════════════════════════════════════════════════
 //  GOOGLE SHEETS API
 // ════════════════════════════════════════════════════════════
-let API_URL = 'https://script.google.com/macros/s/AKfycbwzx9npsM28rH9govcURJc34uRobB_uEPJd7PjiZWskhSX24nyhFuU0pitQCJQUivXx/exec';
+let API_URL = 'https://script.google.com/macros/s/AKfycby8FD_A6q2G0_vcrSBuD_u7iTDA_mIsMErvOuGOCQjEqnJANoFdUTUTrCH3wkDaeSG4/exec';
 
 async function apiGet() {
-  const r = await fetch(API_URL + '?action=load', {redirect:'follow'});
-  const d = await r.json();
+  const r = await fetch(API_URL + '?action=load');
+  const text = await r.text();
+  let d;
+  try { d = JSON.parse(text); } catch(e){ throw new Error('API ตอบกลับไม่ถูกต้อง'); }
   if (!d.ok) throw new Error(d.error);
   return d.data;
 }
 async function apiPost(body) {
-  // ใช้ GET + payload เพื่อหลีกเลี่ยงปัญหา CORS redirect ของ Apps Script
+  // ใช้ no-cors + form submission เพื่อหลีกเลี่ยง CORS
   const payload = encodeURIComponent(JSON.stringify(body));
-  const r = await fetch(API_URL + '?payload=' + payload, {redirect:'follow'});
-  const text = await r.text();
-  let d;
-  try { d = JSON.parse(text); } catch(e){ throw new Error('Response ไม่ใช่ JSON: '+text.slice(0,100)); }
-  if (!d.ok) throw new Error(d.error);
-  return d.data;
+  const url = API_URL + '?payload=' + payload;
+  try {
+    const r = await fetch(url, { mode: 'no-cors' });
+    // no-cors ไม่ return body — รอแล้วโหลดใหม่จาก Sheets
+    return {};
+  } catch(e) {
+    throw new Error(e.message);
+  }
 }
 async function loadFromSheets() {
   showLoading(true);
@@ -1131,14 +1135,14 @@ async function addUser(){
   showLoading(true);
   try {
     await apiPost({action:'addUser', user:newUser});
-    DB.users.push(newUser);
+    // รอ 1.5 วิให้ Sheets บันทึกก่อน แล้วโหลดใหม่
+    await new Promise(r=>setTimeout(r,1500));
+    await loadFromSheets();
     document.getElementById('a-un').value='';
     document.getElementById('a-ue').value='';
     document.getElementById('a-ub').value='';
     document.getElementById('a-ur').value='';
-    addLog(`➕ เพิ่ม <b>${name}</b> รหัส <code>${refCode}</code> (${customRate??DB.rate}%)`,'green');
     toast(`เพิ่ม ${name} สำเร็จ — รหัส: ${refCode}`);
-    renderAdmin();
   } catch(e){ toast('เพิ่มสมาชิกไม่สำเร็จ: '+e.message,'error'); }
   finally{ showLoading(false); }
 }
@@ -1148,8 +1152,9 @@ async function delUser(id){
   showLoading(true);
   try {
     await apiPost({action:'deleteUser', id});
-    DB.users=DB.users.filter(u=>u.id!==id);
-    renderAdmin(); toast('ลบสมาชิกแล้ว','warning');
+    await new Promise(r=>setTimeout(r,1500));
+    await loadFromSheets();
+    toast('ลบสมาชิกแล้ว','warning');
   } catch(e){ toast('ลบไม่สำเร็จ: '+e.message,'error'); }
   finally{ showLoading(false); }
 }
@@ -1160,13 +1165,10 @@ async function payout(uid){
   if(!confirm(`จ่าย ฿${fmt(u.pendingComm)} ให้ ${u.name}?`))return;
   showLoading(true);
   try {
-    const res = await apiPost({action:'payout', uid});
-    const a = res.amount;
-    u.paidComm=(u.paidComm||0)+a; u.pendingComm=0;
-    DB.payouts.push({ts:Date.now(),uid,name:u.name,a});
-    addLog(`💳 จ่ายค่าคอม <b style="color:var(--green)">฿${fmt(a)}</b> ให้ <b>${u.name}</b>`,'green');
-    toast(`จ่าย ฿${fmt(a)} ให้ ${u.name} แล้ว`);
-    renderAdmin();
+    await apiPost({action:'payout', uid});
+    await new Promise(r=>setTimeout(r,1500));
+    await loadFromSheets();
+    toast(`จ่ายให้ ${u.name} แล้ว`);
   } catch(e){ toast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
   finally{ showLoading(false); }
 }
@@ -1377,8 +1379,9 @@ async function clearAll(){
   showLoading(true);
   try {
     await apiPost({action:'clearAll'});
-    DB={users:[],orders:[],payouts:[],log:[],rate:DB.rate};
-    renderAdmin(); toast('ล้างข้อมูลแล้ว','warning');
+    await new Promise(r=>setTimeout(r,1500));
+    await loadFromSheets();
+    toast('ล้างข้อมูลแล้ว','warning');
   } catch(e){ toast('ล้างไม่สำเร็จ: '+e.message,'error'); }
   finally{ showLoading(false); }
 }
