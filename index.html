@@ -237,7 +237,7 @@ input.fi,select.fi{
   padding:9px 12px;color:var(--text);font-family:var(--body);font-size:14px;
   outline:none;transition:border-color .2s,background .2s;width:100%;
 }
-input.fi:focus,select.fi:focus{border-color:var(--accent);background:#fff;}
+input.fi:focus,select.fi:focus{border-color:var(--accent);background:#fff;color:#1c1917;}
 input.fi::placeholder{color:var(--subtle);}
 
 /* BUTTONS */
@@ -577,6 +577,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
         <div class="grid2">
           <div class="fg"><label>ชื่อ-นามสกุล</label><input class="fi" id="a-un" placeholder="สมชาย ใจดี"></div>
           <div class="fg"><label>อีเมล</label><input class="fi" id="a-ue" type="email" placeholder="email@example.com"></div>
+          <div class="fg"><label>เลขบัญชีธนาคาร</label><input class="fi" id="a-ub" placeholder="เช่น 123-4-56789-0"></div>
           <div class="fg"><label>% ค่าคอม (เว้นว่าง = ใช้อัตรากลาง)</label><input class="fi" id="a-ur" type="number" placeholder="เช่น 3" min="0.5" max="50" step="0.5"></div>
         </div>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
@@ -602,7 +603,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
         </div>
         <div class="tw">
           <table>
-            <thead><tr><th>ID</th><th>ชื่อ / อีเมล</th><th>Referral Code</th><th>% คอม</th><th>ออเดอร์</th><th>ยอดขาย</th><th>ค่าคอมสะสม</th><th>รอจ่าย</th><th>จ่ายแล้ว</th><th>ลิ้งสมาชิก</th><th></th></tr></thead>
+            <thead><tr><th>ID</th><th>ชื่อ / อีเมล</th><th>Referral Code</th><th>% คอม</th><th>เลขบัญชี</th><th>ออเดอร์</th><th>ยอดขาย</th><th>ค่าคอมสะสม</th><th>รอจ่าย</th><th>จ่ายแล้ว</th><th>ลิ้งสมาชิก</th><th></th></tr></thead>
             <tbody id="a-tb-u"></tbody>
           </table>
         </div>
@@ -646,7 +647,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
         <div class="ct">💸 สรุปค่าคอมรายบุคคล</div>
         <div class="tw">
           <table>
-            <thead><tr><th>สมาชิก</th><th>Code</th><th>ออเดอร์</th><th>ยอดขาย</th><th>ค่าคอมสะสม</th><th>รอจ่าย</th><th>จ่ายแล้ว</th><th></th></tr></thead>
+            <thead><tr><th>สมาชิก</th><th>Code</th><th>เลขบัญชี</th><th>ออเดอร์</th><th>ยอดขาย</th><th>ค่าคอมสะสม</th><th>รอจ่าย</th><th>จ่ายแล้ว</th><th></th></tr></thead>
             <tbody id="a-tb-c"></tbody>
           </table>
         </div>
@@ -1060,6 +1061,7 @@ function renderRecent(){
 function addUser(){
   const name =document.getElementById('a-un').value.trim();
   const email=document.getElementById('a-ue').value.trim().toLowerCase();
+  const bank =document.getElementById('a-ub').value.trim();
   const rateRaw=document.getElementById('a-ur').value.trim();
   if(!name||!email){toast('กรุณากรอกชื่อและอีเมล','error');return;}
   if(!email.includes('@')){toast('อีเมลไม่ถูกต้อง','error');return;}
@@ -1070,9 +1072,10 @@ function addUser(){
   }
   const id='U'+String(DB.users.length+1).padStart(3,'0');
   const refCode=uniqCode();
-  DB.users.push({id,name,email,refCode,customRate,totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()});
+  DB.users.push({id,name,email,bank,refCode,customRate,totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()});
   document.getElementById('a-un').value='';
   document.getElementById('a-ue').value='';
+  document.getElementById('a-ub').value='';
   document.getElementById('a-ur').value='';
   addLog(`➕ เพิ่ม <b>${name}</b> รหัส <code>${refCode}</code> (${customRate??DB.rate}%)`,'green');
   toast(`เพิ่ม ${name} สำเร็จ — รหัส: ${refCode} · คอม ${customRate??DB.rate}%`);
@@ -1116,7 +1119,7 @@ function rStats(){
 
 function rUsers(){
   const tb=document.getElementById('a-tb-u');
-  if(!DB.users.length){tb.innerHTML='<tr><td colspan="11"><div class="emp"><div class="ic">👤</div>ยังไม่มีสมาชิก</div></td></tr>';return;}
+  if(!DB.users.length){tb.innerHTML='<tr><td colspan="12"><div class="emp"><div class="ic">👤</div>ยังไม่มีสมาชิก</div></td></tr>';return;}
   tb.innerHTML=DB.users.map(u=>{
     const effRate = u.customRate??DB.rate;
     const isCustom = u.customRate!=null;
@@ -1138,6 +1141,12 @@ function rUsers(){
                     :`<span style="font-size:9px;color:var(--subtle)">กลาง</span>`}
         </div>
       </td>
+      <td>
+        <input type="text" value="${u.bank||''}" placeholder="เลขบัญชี"
+          style="width:130px;background:var(--s2);border:1px solid var(--border);border-radius:6px;
+                 padding:3px 8px;font-family:var(--mono);font-size:11px;color:var(--text);outline:none;"
+          onchange="setUserBank('${u.id}',this.value)">
+      </td>
       <td><span class="badge bx">${u.orderCount||0}</span></td>
       <td class="mn co">฿${fmt(u.totalSales||0)}</td>
       <td class="mn co">฿${fmt(u.totalComm||0)}</td>
@@ -1147,6 +1156,13 @@ function rUsers(){
       <td><button class="btn btn-d btn-sm" onclick="delUser('${u.id}')">ลบ</button></td>
     </tr>`;
   }).join('');
+}
+
+function setUserBank(uid, bank){
+  const u = DB.users.find(u=>u.id===uid);
+  if(!u) return;
+  u.bank = bank.trim();
+  toast(`บันทึกเลขบัญชี ${u.name} แล้ว`,'info');
 }
 
 function setUserRate(uid, rate){
@@ -1188,11 +1204,18 @@ function rOrders(){
 function rComm(){
   const tb=document.getElementById('a-tb-c');
   const list=DB.users.filter(u=>(u.totalComm||0)>0).sort((a,b)=>b.totalComm-a.totalComm);
-  if(!list.length){tb.innerHTML='<tr><td colspan="8"><div class="emp"><div class="ic">💸</div>ยังไม่มีค่าคอม</div></td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="9"><div class="emp"><div class="ic">💸</div>ยังไม่มีค่าคอม</div></td></tr>';return;}
   tb.innerHTML=list.map(u=>`
     <tr>
       <td><b>${u.name}</b><br><span style="font-size:11px;color:var(--muted)">${u.email}</span></td>
       <td><span class="ctag nc">${u.refCode}</span></td>
+      <td>
+        ${u.bank
+          ? `<span class="mn" style="font-size:12px;color:var(--text)">${u.bank}</span>
+             <button onclick="navigator.clipboard.writeText('${u.bank}').then(()=>toast('คัดลอกเลขบัญชีแล้ว','info'))"
+               style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:0 4px" title="คัดลอก">📋</button>`
+          : `<span style="color:var(--subtle);font-size:11px">ไม่มีข้อมูล</span>`}
+      </td>
       <td><span class="badge bb">${u.orderCount||0}</span></td>
       <td class="mn">฿${fmt(u.totalSales||0)}</td>
       <td class="mn co" style="font-size:15px">฿${fmt(u.totalComm||0)}</td>
