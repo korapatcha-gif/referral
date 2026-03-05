@@ -1309,8 +1309,31 @@ function encodeMember(userId) {
 
 function decodeMember(encoded) {
   try {
-    const json = decodeURIComponent(atob(encoded.replace(/-/g,'+').replace(/_/g,'/')));
-    return JSON.parse(json);
+    const b64 = encoded.replace(/-/g,'+').replace(/_/g,'/');
+    const raw = atob(b64);
+    // ลอง decode เป็น UTF-8 bytes ก่อน (format ใหม่)
+    let json;
+    try {
+      const bytes = Uint8Array.from(raw, c=>c.charCodeAt(0));
+      json = new TextDecoder().decode(bytes);
+    } catch {
+      // fallback: format เก่าที่ใช้ encodeURIComponent
+      json = decodeURIComponent(raw);
+    }
+    const d = JSON.parse(json);
+    // รองรับ format ใหม่ (key สั้น) และ format เก่า
+    if (d.n) {
+      return {
+        name: d.n, refCode: d.r,
+        totalComm: d.tc||0, pendingComm: d.pc||0, paidComm: d.pd||0,
+        orderCount: d.oc||0,
+        orders: (d.o||[]).map(o=>Array.isArray(o)
+          ? {ts:o[0]*1000, amt:o[1], commission:o[2], customerName:o[3]||''}
+          : o),
+        generatedAt: Date.now()
+      };
+    }
+    return d; // format เก่า
   } catch(e) {
     console.error('decodeMember error:', e);
     return null;
@@ -1322,23 +1345,24 @@ function copyMemberLink(userId) {
   const u = DB.users.find(u=>u.id===userId);
   if (!u) { toast('ไม่พบสมาชิก','error'); return; }
 
-  const orders = DB.orders.filter(o=>o.refCode===u.refCode).map(o=>({
-    ts:o.ts, amt:o.amt, commission:o.commission, rate:o.rate, customerName:o.customerName||""
-  }));
-  const payload = {
-    id:u.id, name:u.name, refCode:u.refCode,
-    totalComm:u.totalComm||0, pendingComm:u.pendingComm||0,
-    paidComm:u.paidComm||0, totalSales:u.totalSales||0,
-    orderCount:u.orderCount||0, orders,
-    generatedAt:Date.now()
+  // key สั้น + เก็บเฉพาะที่จำเป็น = URL สั้นลง ~60%
+  const orders = DB.orders.filter(o=>o.refCode===u.refCode)
+    .map(o=>[Math.round(o.ts/1000), o.amt, o.commission, o.customerName||'']);
+
+  const p = {
+    n:u.name, r:u.refCode,
+    tc:u.totalComm||0, pc:u.pendingComm||0, pd:u.paidComm||0,
+    oc:u.orderCount||0, o:orders
   };
 
-  // URL-safe base64 ที่ทำงานได้ทุก browser รวมถึง mobile
-  const encoded = btoa(encodeURIComponent(JSON.stringify(payload)))
-    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  // encode UTF-8 bytes โดยตรง = URL สั้นกว่า %XX encoding ~50%
+  const j = JSON.stringify(p);
+  const bytes = new TextEncoder().encode(j);
+  const b64 = btoa(String.fromCharCode(...bytes));
+  const encoded = b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 
   const base = window.location.href.split('?')[0];
-  const url  = base + '?member=' + encoded;
+  const url  = base + '?m=' + encoded;
 
   navigator.clipboard.writeText(url)
     .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + u.name + ' ได้เลย','success'))
@@ -1407,7 +1431,7 @@ function renderMemberPage(data) {
 // --- check URL on load ---
 function checkMemberUrl() {
   const params  = new URLSearchParams(window.location.search);
-  const encoded = params.get('member');
+  const encoded = params.get('m') || params.get('member');
   if (!encoded) return false;
   const data = decodeMember(encoded);
   if (!data || !data.name) {
