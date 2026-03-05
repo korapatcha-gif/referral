@@ -693,17 +693,21 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 // ════════════════════════════════════════════════════════════
 //  GOOGLE SHEETS API
 // ════════════════════════════════════════════════════════════
-let API_URL = 'https://script.google.com/macros/s/AKfycbxnpPRLcAG6o3eG5oOLHfcye-klmVlzypP5knaGvuapSN6Mgb_UxtPRYfHbOZo2rgn4/exec';
+let API_URL = 'https://script.google.com/macros/s/AKfycbwzx9npsM28rH9govcURJc34uRobB_uEPJd7PjiZWskhSX24nyhFuU0pitQCJQUivXx/exec';
 
 async function apiGet() {
-  const r = await fetch(API_URL + '?action=load');
+  const r = await fetch(API_URL + '?action=load', {redirect:'follow'});
   const d = await r.json();
   if (!d.ok) throw new Error(d.error);
   return d.data;
 }
 async function apiPost(body) {
-  const r = await fetch(API_URL, { method:'POST', body:JSON.stringify(body) });
-  const d = await r.json();
+  // ใช้ GET + payload เพื่อหลีกเลี่ยงปัญหา CORS redirect ของ Apps Script
+  const payload = encodeURIComponent(JSON.stringify(body));
+  const r = await fetch(API_URL + '?payload=' + payload, {redirect:'follow'});
+  const text = await r.text();
+  let d;
+  try { d = JSON.parse(text); } catch(e){ throw new Error('Response ไม่ใช่ JSON: '+text.slice(0,100)); }
   if (!d.ok) throw new Error(d.error);
   return d.data;
 }
