@@ -704,9 +704,11 @@ async function apiGet() {
   return d.data;
 }
 async function apiPost(body) {
-  // ส่งผ่าน GET payload — ทดสอบแล้วทำงานได้
   const payload = encodeURIComponent(JSON.stringify(body));
-  const r = await fetch(API_URL + '?payload=' + payload);
+  const r = await fetch(API_URL + '?payload=' + payload, {
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' }
+  });
   const text = await r.text();
   let d;
   try { d = JSON.parse(text); } catch(e){ throw new Error('API ตอบกลับไม่ถูกต้อง: ' + text.slice(0,80)); }
