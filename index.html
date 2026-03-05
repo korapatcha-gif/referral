@@ -693,7 +693,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 // ════════════════════════════════════════════════════════════
 //  GOOGLE SHEETS API
 // ════════════════════════════════════════════════════════════
-let API_URL = 'https://script.google.com/macros/s/AKfycby8FD_A6q2G0_vcrSBuD_u7iTDA_mIsMErvOuGOCQjEqnJANoFdUTUTrCH3wkDaeSG4/exec';
+let API_URL = 'https://script.google.com/macros/s/AKfycbyFZj2BhDrlkhfZy7GoRHF3E4CzzI9PqW4bBqxYNvAxRAdc9ZOKwbXAfnmFwPcyD_Hh/exec';
 
 async function apiGet() {
   const r = await fetch(API_URL + '?action=load');
@@ -704,16 +704,26 @@ async function apiGet() {
   return d.data;
 }
 async function apiPost(body) {
-  const payload = encodeURIComponent(JSON.stringify(body));
-  const r = await fetch(API_URL + '?payload=' + payload, {
-    redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' }
-  });
-  const text = await r.text();
-  let d;
-  try { d = JSON.parse(text); } catch(e){ throw new Error('API ตอบกลับไม่ถูกต้อง: ' + text.slice(0,80)); }
-  if (!d.ok) throw new Error(d.error||'unknown error');
-  return d.data || {};
+  // ส่งแบบ form POST — Apps Script doPost รองรับ
+  const form = new FormData();
+  form.append('payload', JSON.stringify(body));
+  try {
+    const r = await fetch(API_URL, { method: 'POST', body: form });
+    const text = await r.text();
+    let d;
+    try { d = JSON.parse(text); } catch(e){ throw new Error('API ตอบกลับไม่ถูกต้อง'); }
+    if (!d.ok) throw new Error(d.error||'unknown error');
+    return d.data || {};
+  } catch(e) {
+    // ถ้า CORS block ให้ fallback ไป GET payload
+    const payload = encodeURIComponent(JSON.stringify(body));
+    const r2 = await fetch(API_URL + '?payload=' + payload);
+    const text2 = await r2.text();
+    let d2;
+    try { d2 = JSON.parse(text2); } catch(e2){ throw new Error('API ตอบกลับไม่ถูกต้อง'); }
+    if (!d2.ok) throw new Error(d2.error||'unknown error');
+    return d2.data || {};
+  }
 }
 async function loadFromSheets() {
   showLoading(true);
