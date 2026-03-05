@@ -690,17 +690,63 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 </div>
 
 <script>
+// ════════════════════════════════════════════════════════════
+//  GOOGLE SHEETS API
+// ════════════════════════════════════════════════════════════
+let API_URL = 'https://script.google.com/macros/s/AKfycbxnpPRLcAG6o3eG5oOLHfcye-klmVlzypP5knaGvuapSN6Mgb_UxtPRYfHbOZo2rgn4/exec';
+
+async function apiGet() {
+  const r = await fetch(API_URL + '?action=load');
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error);
+  return d.data;
+}
+async function apiPost(body) {
+  const r = await fetch(API_URL, { method:'POST', body:JSON.stringify(body) });
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error);
+  return d.data;
+}
+async function loadFromSheets() {
+  showLoading(true);
+  try {
+    const data = await apiGet();
+    DB.users   = data.users   || [];
+    DB.orders  = data.orders  || [];
+    DB.payouts = data.payouts || [];
+    DB.rate    = data.rate    || 2;
+    DB.log     = [];
+    renderAdmin();
+    const sl = document.getElementById('rate-slider');
+    if(sl){ sl.value=DB.rate; document.getElementById('rate-val').textContent=DB.rate; }
+    toast('โหลดข้อมูลสำเร็จ ✓','info');
+  } catch(e) {
+    toast('โหลดข้อมูลไม่สำเร็จ: '+e.message,'error');
+  } finally { showLoading(false); }
+}
+function showLoading(on) {
+  let el = document.getElementById('gl');
+  if (!el) {
+    el = document.createElement('div'); el.id='gl';
+    el.style.cssText='position:fixed;inset:0;background:rgba(7,9,15,.85);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(4px);';
+    el.innerHTML='<div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div><span style="font-size:13px;color:var(--muted)">กำลังโหลดข้อมูล...</span>';
+    document.body.appendChild(el);
+    const s=document.createElement('style'); s.textContent='@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(s);
+  }
+  el.style.display=on?'flex':'none';
+}
+
 // ════════════════════════════════════════════
 // SINGLE SHARED DATA STORE
 // ข้อมูลทุกอย่างอยู่ที่นี่ที่เดียว
 // ทั้งพนักงานและ Admin อ่าน/เขียนที่เดียวกัน
 // ════════════════════════════════════════════
 let DB = {
-  users:   [],   // สมาชิก
-  orders:  [],   // ออเดอร์ทั้งหมด
-  payouts: [],   // ประวัติการจ่าย
-  log:     [],   // activity log
-  rate:    2     // อัตราค่าคอม %
+  users:   [],
+  orders:  [],
+  payouts: [],
+  log:     [],
+  rate:    2
 };
 
 // ─── UTILS ───────────────────────────────────
@@ -887,11 +933,13 @@ function aTab(t){
 }
 
 // ─── RATE ──────────────────────────────────
-function setRate(v){
+async function setRate(v){
   DB.rate=v;
   document.getElementById('a-rs').value=v;
   document.getElementById('a-rb').innerHTML=v+'<span>%</span>';
   updateStaffPreview();
+  try { await apiPost({action:'setRate', rate:v}); }
+  catch(e){ toast('บันทึก rate ไม่สำเร็จ','error'); }
 }
 
 // ══════════════════════════════════════════
@@ -1004,6 +1052,9 @@ function staffSubmit(){
     addLog(`🛒 บันทึกออเดอร์ ฿${fmt(amt)} ${code?'(รหัสผิด)':'(ไม่มีรหัส)'}`,'gray');
   }
 
+  // บันทึกลง Sheets (background — ไม่บล็อก UI)
+  apiPost({action:'addOrder', order}).catch(e=> toast('⚠️ บันทึก Sheets ไม่สำเร็จ: '+e.message,'error'));
+
   showSuccess(order, ref);
 }
 
@@ -1058,7 +1109,7 @@ function renderRecent(){
 // ══════════════════════════════════════════
 // ADMIN FUNCTIONS
 // ══════════════════════════════════════════
-function addUser(){
+async function addUser(){
   const name =document.getElementById('a-un').value.trim();
   const email=document.getElementById('a-ue').value.trim().toLowerCase();
   const bank =document.getElementById('a-ub').value.trim();
@@ -1072,31 +1123,48 @@ function addUser(){
   }
   const id='U'+String(DB.users.length+1).padStart(3,'0');
   const refCode=uniqCode();
-  DB.users.push({id,name,email,bank,refCode,customRate,totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()});
-  document.getElementById('a-un').value='';
-  document.getElementById('a-ue').value='';
-  document.getElementById('a-ub').value='';
-  document.getElementById('a-ur').value='';
-  addLog(`➕ เพิ่ม <b>${name}</b> รหัส <code>${refCode}</code> (${customRate??DB.rate}%)`,'green');
-  toast(`เพิ่ม ${name} สำเร็จ — รหัส: ${refCode} · คอม ${customRate??DB.rate}%`);
-  renderAdmin();
+  const newUser={id,name,email,bank,refCode,customRate,totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()};
+  showLoading(true);
+  try {
+    await apiPost({action:'addUser', user:newUser});
+    DB.users.push(newUser);
+    document.getElementById('a-un').value='';
+    document.getElementById('a-ue').value='';
+    document.getElementById('a-ub').value='';
+    document.getElementById('a-ur').value='';
+    addLog(`➕ เพิ่ม <b>${name}</b> รหัส <code>${refCode}</code> (${customRate??DB.rate}%)`,'green');
+    toast(`เพิ่ม ${name} สำเร็จ — รหัส: ${refCode}`);
+    renderAdmin();
+  } catch(e){ toast('เพิ่มสมาชิกไม่สำเร็จ: '+e.message,'error'); }
+  finally{ showLoading(false); }
 }
 
-function delUser(id){
+async function delUser(id){
   if(!confirm('ลบสมาชิกนี้?'))return;
-  DB.users=DB.users.filter(u=>u.id!==id);
-  renderAdmin();
+  showLoading(true);
+  try {
+    await apiPost({action:'deleteUser', id});
+    DB.users=DB.users.filter(u=>u.id!==id);
+    renderAdmin(); toast('ลบสมาชิกแล้ว','warning');
+  } catch(e){ toast('ลบไม่สำเร็จ: '+e.message,'error'); }
+  finally{ showLoading(false); }
 }
 
-function payout(uid){
+async function payout(uid){
   const u=DB.users.find(u=>u.id===uid);
   if(!u||!(u.pendingComm>0)){toast('ไม่มียอดรอจ่าย','warning');return;}
-  const a=u.pendingComm;
-  u.paidComm=(u.paidComm||0)+a; u.pendingComm=0;
-  DB.payouts.push({ts:Date.now(),uid,name:u.name,a});
-  addLog(`💳 จ่ายค่าคอม <b style="color:var(--green)">฿${fmt(a)}</b> ให้ <b>${u.name}</b>`,'green');
-  toast(`จ่าย ฿${fmt(a)} ให้ ${u.name} แล้ว`);
-  renderAdmin();
+  if(!confirm(`จ่าย ฿${fmt(u.pendingComm)} ให้ ${u.name}?`))return;
+  showLoading(true);
+  try {
+    const res = await apiPost({action:'payout', uid});
+    const a = res.amount;
+    u.paidComm=(u.paidComm||0)+a; u.pendingComm=0;
+    DB.payouts.push({ts:Date.now(),uid,name:u.name,a});
+    addLog(`💳 จ่ายค่าคอม <b style="color:var(--green)">฿${fmt(a)}</b> ให้ <b>${u.name}</b>`,'green');
+    toast(`จ่าย ฿${fmt(a)} ให้ ${u.name} แล้ว`);
+    renderAdmin();
+  } catch(e){ toast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
+  finally{ showLoading(false); }
 }
 
 function copyCode(c){ navigator.clipboard.writeText(c).then(()=>toast(`คัดลอก ${c}`,'info')).catch(()=>{}); }
@@ -1158,21 +1226,22 @@ function rUsers(){
   }).join('');
 }
 
-function setUserBank(uid, bank){
+async function setUserBank(uid, bank){
   const u = DB.users.find(u=>u.id===uid);
   if(!u) return;
   u.bank = bank.trim();
-  toast(`บันทึกเลขบัญชี ${u.name} แล้ว`,'info');
+  try { await apiPost({action:'updateUser', user:{id:uid, bank:u.bank}}); toast(`บันทึกเลขบัญชี ${u.name} แล้ว`,'info'); }
+  catch(e){ toast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
 }
 
-function setUserRate(uid, rate){
+async function setUserRate(uid, rate){
   const u = DB.users.find(u=>u.id===uid);
   if(!u) return;
-  if(isNaN(rate)||rate<0.5||rate>50){ toast('% ต้องอยู่ระหว่าง 0.5–50','error'); renderAdmin(); return; }
+  if(isNaN(rate)||rate<0.5||rate>50){ toast('% ต้องอยู่ระหว่าง 0.5–50','error'); rUsers(); return; }
   u.customRate = rate;
-  addLog(`⚙️ ปรับ % ของ <b>${u.name}</b> เป็น <b>${rate}%</b>`,'yellow');
-  toast(`${u.name} ได้รับ ${rate}% แล้ว`,'info');
-  rUsers(); // re-render table only (ไม่ต้อง render ทั้งหมด)
+  try { await apiPost({action:'updateUser', user:{id:uid, customRate:rate}}); toast(`${u.name} ได้รับ ${rate}% แล้ว`,'info'); }
+  catch(e){ toast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
+  rUsers();
 }
 
 function resetUserRate(uid){
@@ -1299,10 +1368,15 @@ function loadDemo(){
   renderAdmin();
 }
 
-function clearAll(){
-  if(!confirm('ล้างข้อมูลทั้งหมด?'))return;
-  DB={users:[],orders:[],payouts:[],log:[],rate:DB.rate};
-  renderAdmin(); toast('ล้างข้อมูลแล้ว','warning');
+async function clearAll(){
+  if(!confirm('ล้างข้อมูลทั้งหมด? (ลบทั้งใน Sheets ด้วย)'))return;
+  showLoading(true);
+  try {
+    await apiPost({action:'clearAll'});
+    DB={users:[],orders:[],payouts:[],log:[],rate:DB.rate};
+    renderAdmin(); toast('ล้างข้อมูลแล้ว','warning');
+  } catch(e){ toast('ล้างไม่สำเร็จ: '+e.message,'error'); }
+  finally{ showLoading(false); }
 }
 
 // ════════════════════════════════════════════
@@ -1467,7 +1541,12 @@ function checkMemberUrl() {
 
 // ─── INIT ──────────────────────────────
 if (!checkMemberUrl()) {
-  loadDemo();
+  if (API_URL === 'YOUR_APPS_SCRIPT_URL') {
+    // ยังไม่ได้ใส่ URL — โหลด demo แทน
+    loadDemo();
+  } else {
+    loadFromSheets();
+  }
 }
 </script>
 </body>
