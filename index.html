@@ -502,9 +502,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
       autocomplete="off" spellcheck="false">
 
     <div class="sec-label">🔑 รหัสผู้แนะนำ <span style="font-size:9px;color:var(--muted);text-transform:none;letter-spacing:0">(ไม่บังคับ)</span></div>
-    <input class="ref-input" id="s-ref" type="text" placeholder="REF-XXXXXX" maxlength="10"
+    <input class="ref-input" id="s-ref" type="text" placeholder="XXXXX" maxlength="5"
       autocomplete="off" spellcheck="false"
-      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');onRefInput()">
+      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');onRefInput()">
     <div class="ref-status empty" id="s-ref-status">
       <span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>
     </div>
@@ -709,7 +709,7 @@ function ft(ts){ return new Date(ts).toLocaleString('th-TH',{day:'2-digit',month
 function calcComm(amt, rate){ return Math.round(amt * (rate||DB.rate) * 100) / 10000; }
 function mkCode(){
   const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s='REF-'; for(let i=0;i<6;i++) s+=c[Math.random()*c.length|0]; return s;
+  let s=''; for(let i=0;i<5;i++) s+=c[Math.random()*c.length|0]; return s;
 }
 function uniqCode(){ let c,t=0; do{c=mkCode();t++;}while(DB.users.some(u=>u.refCode===c)&&t<200); return c; }
 
