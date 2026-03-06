@@ -606,7 +606,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
         </div>
         <div class="tw">
           <table>
-            <thead><tr><th>ID</th><th>ชื่อ / อีเมล</th><th>Referral Code</th><th>% คอม</th><th>เลขบัญชี</th><th>ออเดอร์</th><th>ยอดขาย</th><th>ค่าคอมสะสม</th><th>รอจ่าย</th><th>จ่ายแล้ว</th><th>ลิ้งสมาชิก</th><th></th></tr></thead>
+            <thead><tr><th>ID</th><th>ชื่อ / อีเมล</th><th>Referral Code</th><th>Tier เดือนนี้</th><th>% คอม</th><th>เลขบัญชี</th><th>ออเดอร์</th><th>ยอดขาย</th><th>ค่าคอมสะสม</th><th>รอจ่าย</th><th>จ่ายแล้ว</th><th>ลิ้งสมาชิก</th><th></th></tr></thead>
             <tbody id="a-tb-u"></tbody>
           </table>
         </div>
@@ -778,6 +778,73 @@ function fmt(n){ return(+n).toLocaleString('th-TH',{minimumFractionDigits:2,maxi
 function fmti(n){ return(+n).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:0}); }
 function ft(ts){ return new Date(ts).toLocaleString('th-TH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
 function calcComm(amt, rate){ return Math.round(amt * (rate||DB.rate) * 100) / 10000; }
+
+// ════════════════════════════════════════════
+// TIER SYSTEM — ระบบค่าคอมขั้นบันได
+// ════════════════════════════════════════════
+const TIERS = [
+  { name:'Bronze', icon:'🥉', color:'#b45309', bg:'rgba(180,83,9,.1)',  border:'rgba(180,83,9,.25)',  min:0,     max:4999,  rate:2, bonus:0    },
+  { name:'Silver', icon:'🥈', color:'#94a3b8', bg:'rgba(148,163,184,.1)',border:'rgba(148,163,184,.25)',min:5000, max:14999, rate:3, bonus:500  },
+  { name:'Gold',   icon:'🥇', color:'#f59e0b', bg:'rgba(245,158,11,.1)', border:'rgba(245,158,11,.25)', min:15000,max:29999, rate:5, bonus:1000 },
+  { name:'Diamond',icon:'💎', color:'#00e5ff', bg:'rgba(0,229,255,.08)', border:'rgba(0,229,255,.22)', min:30000,max:Infinity,rate:8,bonus:2000 },
+];
+
+function getTier(monthlySales) {
+  for(let i=TIERS.length-1;i>=0;i--) {
+    if(monthlySales >= TIERS[i].min) return TIERS[i];
+  }
+  return TIERS[0];
+}
+
+function getNextTier(monthlySales) {
+  const t = getTier(monthlySales);
+  const idx = TIERS.indexOf(t);
+  return idx < TIERS.length-1 ? TIERS[idx+1] : null;
+}
+
+// คำนวณยอดขายในเดือนปัจจุบันของ user คนนั้น
+function getMonthlySales(userId) {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const u = DB.users.find(u=>u.id===userId);
+  if(!u) return 0;
+  return DB.orders
+    .filter(o=> o.refCode===u.refCode && o.ts>=startOfMonth)
+    .reduce((s,o)=>s+o.amt, 0);
+}
+
+// อัตราค่าคอมที่ใช้จริง (tier หรือ custom)
+function getEffectiveRate(user) {
+  if(user.customRate != null) return user.customRate;
+  const monthly = getMonthlySales(user.id);
+  return getTier(monthly).rate;
+}
+
+// badge HTML สำหรับ tier
+function tierBadge(monthlySales, small=false) {
+  const t = getTier(monthlySales);
+  const sz = small ? 'font-size:10px;padding:2px 7px' : 'font-size:12px;padding:3px 10px';
+  return `<span style="display:inline-flex;align-items:center;gap:4px;background:${t.bg};border:1px solid ${t.border};border-radius:100px;color:${t.color};font-weight:700;white-space:nowrap;${sz}">${t.icon} ${t.name}</span>`;
+}
+
+// progress bar ไปยัง tier ถัดไป
+function tierProgress(monthlySales) {
+  const t = getTier(monthlySales);
+  const next = getNextTier(monthlySales);
+  if(!next) return `<div style="font-size:11px;color:var(--accent);text-align:center;padding:4px 0">🏆 ระดับสูงสุดแล้ว!</div>`;
+  const pct = Math.min(100, ((monthlySales - t.min) / (next.min - t.min)) * 100);
+  const remain = next.min - monthlySales;
+  return `
+    <div style="margin-top:6px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px">
+        <span>${t.icon} ${t.name}</span>
+        <span style="color:var(--text)">อีก ฿${fmti(remain)} → ${next.icon} ${next.name} (${next.rate}%)</span>
+      </div>
+      <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${t.color},${next.color});border-radius:4px;transition:width .5s"></div>
+      </div>
+    </div>`;
+}
 function mkCode(){
   const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let s=''; for(let i=0;i<5;i++) s+=c[Math.random()*c.length|0]; return s;
@@ -1031,11 +1098,13 @@ function updateStaffPreview(){
   document.getElementById('s-submit').disabled=!(amt>0);
   const prev=document.getElementById('s-comm');
   if(amt>0 && staffRef){
-    const effRate = staffRef.customRate??DB.rate;
+    const effRate = getEffectiveRate(staffRef);
     const c=calcComm(amt, effRate);
+    const monthly = getMonthlySales(staffRef.id);
+    const t = getTier(monthly);
     document.getElementById('s-comm-name').textContent=staffRef.name;
     document.getElementById('s-comm-amt').textContent='฿'+fmt(c);
-    document.getElementById('s-comm-pct').textContent=effRate+'% ของ ฿'+fmti(amt);
+    document.getElementById('s-comm-pct').textContent=effRate+'% '+t.icon+t.name+' · ฿'+fmti(amt);
     prev.classList.remove('hidden');
   } else {
     prev.classList.add('hidden');
@@ -1056,7 +1125,7 @@ function staffSubmit(){
     // มีรหัสแต่หาไม่เจอ
     st='invalid';
   } else if(ref){
-    const effRate = ref.customRate??DB.rate;
+    const effRate = getEffectiveRate(ref);
     commission=calcComm(amt, effRate);
     ref.totalComm   =(ref.totalComm||0)  +commission;
     ref.pendingComm =(ref.pendingComm||0)+commission;
@@ -1069,7 +1138,7 @@ function staffSubmit(){
     id:DB.orders.length+1, ts:Date.now(),
     amt, customerName:cust,
     refCode:code||'', refName:ref?ref.name:'',
-    commission, rate:ref?(ref.customRate??DB.rate):DB.rate, st
+    commission, rate:ref?getEffectiveRate(ref):DB.rate, st
   };
   DB.orders.push(order);
   staffSession.unshift(order);
@@ -1225,26 +1294,30 @@ function rStats(){
 
 function rUsers(){
   const tb=document.getElementById('a-tb-u');
-  if(!DB.users.length){tb.innerHTML='<tr><td colspan="12"><div class="emp"><div class="ic">👤</div>ยังไม่มีสมาชิก</div></td></tr>';return;}
+  if(!DB.users.length){tb.innerHTML='<tr><td colspan="13"><div class="emp"><div class="ic">👤</div>ยังไม่มีสมาชิก</div></td></tr>';return;}
   tb.innerHTML=DB.users.map(u=>{
-    const effRate = u.customRate??DB.rate;
+    const monthly = getMonthlySales(u.id);
+    const tier = getTier(monthly);
+    const effRate = getEffectiveRate(u);
     const isCustom = u.customRate!=null;
     return `
     <tr>
       <td><span class="mn cm" style="font-size:11px">${u.id}</span></td>
       <td><b>${u.name}</b><br><span style="font-size:11px;color:var(--muted)">${u.email}</span></td>
       <td><span class="ctag" onclick="copyCode('${u.refCode}')">📋 ${u.refCode}</span></td>
+      <td>${tierBadge(monthly,true)}<div style="font-size:10px;color:var(--muted);margin-top:3px">฿${fmti(monthly)}/เดือน</div></td>
       <td>
         <div style="display:flex;align-items:center;gap:4px">
-          <input type="number" value="${effRate}" min="0.5" max="50" step="0.5"
+          <input type="number" value="${isCustom?u.customRate:''}" min="0.5" max="50" step="0.5"
+            placeholder="${tier.rate}"
             style="width:56px;background:var(--s2);border:1px solid var(--border);border-radius:6px;
                    padding:3px 6px;font-family:var(--mono);font-size:12px;font-weight:700;
                    color:${isCustom?'var(--accent)':'var(--muted)'};outline:none;text-align:center;"
             onchange="setUserRate('${u.id}',+this.value)"
-            title="${isCustom?'อัตราเฉพาะบุคคล':'ใช้อัตรากลาง'}">
+            title="${isCustom?'อัตราเฉพาะบุคคล':'ใช้อัตราตาม tier: '+tier.rate+'%'}">
           <span style="font-size:10px;color:var(--muted)">%</span>
           ${isCustom?`<span class="badge bb" style="font-size:9px;padding:1px 5px">custom</span>`
-                    :`<span style="font-size:9px;color:var(--subtle)">กลาง</span>`}
+                    :`<span style="font-size:9px;color:var(--subtle)">${tier.rate}% tier</span>`}
         </div>
       </td>
       <td>
@@ -1478,11 +1551,35 @@ async function renderMemberPage(uid) {
 
     const now = new Date().toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
+    // คำนวณ tier จากออเดอร์เดือนนี้
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+    const monthlySales = orders.filter(o=>o.ts*1000>=startOfMonth||o.ts>=startOfMonth).reduce((s,o)=>s+o.amt,0);
+    const tier = getTier(monthlySales);
+    const nextTier = getNextTier(monthlySales);
+    const tierPct = nextTier ? Math.min(100,((monthlySales-tier.min)/(nextTier.min-tier.min))*100) : 100;
+
     card.innerHTML = `
       <div class="member-header">
         <div class="member-avatar">${u.name.charAt(0).toUpperCase()}</div>
         <div class="member-name">${u.name}</div>
         <div class="member-code">📋 ${u.refCode}</div>
+      </div>
+
+      <!-- TIER CARD -->
+      <div style="background:${tier.bg};border:1px solid ${tier.border};border-radius:14px;padding:16px 18px;margin:16px 0;text-align:center">
+        <div style="font-size:32px;margin-bottom:4px">${tier.icon}</div>
+        <div style="font-size:18px;font-weight:800;color:${tier.color}">${tier.name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">ค่าคอมเดือนนี้: <b style="color:${tier.color}">${tier.rate}%</b> · ยอดขาย ฿${fmti(monthlySales)}</div>
+        ${nextTier ? `
+        <div style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px">
+            <span>${tier.icon} ${tier.name}</span>
+            <span>อีก ฿${fmti(nextTier.min-monthlySales)} → ${nextTier.icon} ${nextTier.name} (${nextTier.rate}%+โบนัส ฿${fmti(nextTier.bonus)})</span>
+          </div>
+          <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden">
+            <div style="height:100%;width:${tierPct}%;background:linear-gradient(90deg,${tier.color},${nextTier.color});border-radius:4px"></div>
+          </div>
+        </div>` : `<div style="font-size:11px;color:var(--accent);margin-top:8px">🏆 ระดับสูงสุดแล้ว!</div>`}
       </div>
       <div class="mstats">
         <div class="mstat" style="--mbar:linear-gradient(90deg,var(--green),var(--accent))">
