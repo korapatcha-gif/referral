@@ -369,53 +369,124 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .shake{animation:shake .4s ease;}
 
-/* ─── MEMBER PORTAL ─── */
-#pg-member{display:none;min-height:100vh;padding:80px 20px 40px;align-items:center;justify-content:center;flex-direction:column;}
+/* ─── MEMBER PORTAL — White Professional Theme ─── */
+#pg-member{
+  display:none;min-height:100vh;
+  align-items:center;justify-content:center;flex-direction:column;
+  padding:20px;
+  background:#f4f6f9;
+}
 #pg-member.on{display:flex;animation:fadeIn .3s ease;}
-.member-card{
-  background:var(--s1);border:1px solid var(--border);border-radius:24px;
-  padding:36px;width:100%;max-width:520px;position:relative;
-  box-shadow:0 24px 80px rgba(0,0,0,.5);
-}
-.member-header{text-align:center;margin-bottom:24px;}
-.member-avatar{
-  width:64px;height:64px;border-radius:50%;margin:0 auto 14px;
-  background:linear-gradient(135deg,var(--accent),var(--green));
-  display:flex;align-items:center;justify-content:center;
-  font-size:26px;font-weight:800;color:#000;
-  box-shadow:0 0 24px rgba(0,229,255,.2);
-}
-.member-name{font-size:22px;font-weight:800;margin-bottom:4px;color:var(--text);}
-.member-code{
-  display:inline-flex;align-items:center;gap:6px;
-  font-family:var(--mono);font-size:13px;color:var(--accent);
-  background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.15);
-  border-radius:8px;padding:4px 12px;letter-spacing:2px;
-}
-.mstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0;}
-.mstat{
-  background:var(--s2);border:1px solid var(--border);border-radius:14px;
-  padding:16px;text-align:center;position:relative;overflow:hidden;
-}
-.mstat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--mbar);}
-.mstat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
-.mstat-value{font-family:var(--mono);font-size:clamp(20px,4vw,28px);font-weight:700;line-height:1;}
-.mstat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
 
-.m-orders-title{
-  font-size:10px;font-weight:700;color:var(--accent);letter-spacing:2px;
-  text-transform:uppercase;margin:20px 0 12px;display:flex;align-items:center;gap:8px;
+/* override dark bg เฉพาะหน้า member */
+#pg-member *{ box-sizing:border-box; }
+
+.member-card{
+  background:#ffffff;
+  border:none;
+  border-radius:20px;
+  padding:0;
+  width:100%;max-width:480px;
+  box-shadow:0 4px 24px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+  overflow:hidden;
+  font-family:'Sarabun',sans-serif;
 }
-.m-orders-title::after{content:'';flex:1;height:1px;background:var(--border);}
-.m-order-item{
-  display:flex;align-items:center;gap:12px;padding:10px 13px;
-  background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;
+
+/* ── header banner ── */
+.mp-header{
+  background:linear-gradient(135deg,#1e3a5f 0%,#2d5282 100%);
+  padding:32px 28px 24px;
+  text-align:center;
+  color:#fff;
+  position:relative;
 }
-.m-order-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
-.m-order-info{flex:1;}
-.m-order-amt{font-size:13px;font-weight:600;color:var(--text);}
-.m-order-date{font-size:11px;color:var(--muted);margin-top:1px;}
-.m-order-comm{font-family:var(--mono);font-weight:700;color:var(--green);font-size:13px;}
+.mp-header::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;height:20px;
+  background:#fff;
+  border-radius:20px 20px 0 0;
+}
+.mp-avatar{
+  width:68px;height:68px;border-radius:50%;margin:0 auto 12px;
+  background:rgba(255,255,255,.15);
+  border:3px solid rgba(255,255,255,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:800;color:#fff;
+  backdrop-filter:blur(4px);
+}
+.mp-name{font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;}
+.mp-code{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:20px;padding:4px 14px;
+  font-size:12px;color:rgba(255,255,255,.9);letter-spacing:2px;
+  font-family:'Space Mono',monospace;
+}
+
+/* ── body ── */
+.mp-body{ padding:24px 24px 28px; }
+
+/* ── stat grid ── */
+.mp-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.mp-stat{
+  background:#f8fafc;border:1px solid #e8edf3;border-radius:14px;
+  padding:16px 14px;text-align:center;position:relative;overflow:hidden;
+}
+.mp-stat::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--sb);
+}
+.mp-stat-label{font-size:10px;color:#94a3b8;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
+.mp-stat-value{font-family:'Space Mono',monospace;font-size:clamp(18px,4vw,26px);font-weight:700;color:var(--sc);line-height:1;}
+.mp-stat-sub{font-size:11px;color:#94a3b8;margin-top:5px;}
+.mp-stat-full{grid-column:span 2;}
+
+/* ── tier card ── */
+.mp-tier{
+  border-radius:14px;padding:16px 18px;margin-bottom:16px;
+  border:1px solid var(--tc);background:var(--tbg);
+  display:flex;align-items:center;gap:14px;
+}
+.mp-tier-icon{font-size:36px;flex-shrink:0;}
+.mp-tier-info{flex:1;}
+.mp-tier-name{font-size:16px;font-weight:800;color:var(--tc);margin-bottom:2px;}
+.mp-tier-rate{font-size:13px;color:#64748b;}
+.mp-progress-wrap{margin-top:8px;}
+.mp-progress-label{display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-bottom:4px;}
+.mp-progress-bar{background:#e2e8f0;border-radius:4px;height:6px;overflow:hidden;}
+.mp-progress-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+
+/* ── orders ── */
+.mp-section-title{
+  font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:1.5px;
+  text-transform:uppercase;margin:16px 0 10px;
+  display:flex;align-items:center;gap:8px;
+}
+.mp-section-title::after{content:'';flex:1;height:1px;background:#e8edf3;}
+
+.mp-order{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;background:#f8fafc;
+  border:1px solid #e8edf3;border-radius:10px;margin-bottom:8px;
+}
+.mp-order-dot{width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0;}
+.mp-order-info{flex:1;}
+.mp-order-customer{font-size:13px;font-weight:600;color:#1e293b;}
+.mp-order-date{font-size:11px;color:#94a3b8;margin-top:1px;}
+.mp-order-comm{font-family:'Space Mono',monospace;font-weight:700;color:#059669;font-size:13px;}
+
+/* ── footer ── */
+.mp-footer{
+  background:#f8fafc;border-top:1px solid #e8edf3;
+  padding:12px 24px;display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;color:#94a3b8;
+}
+.mp-refresh{
+  background:#fff;border:1px solid #e2e8f0;border-radius:8px;
+  padding:5px 12px;font-size:11px;color:#475569;cursor:pointer;
+  font-family:'Sarabun',sans-serif;font-weight:600;
+  transition:all .15s;
+}
+.mp-refresh:hover{border-color:#3b82f6;color:#3b82f6;}
 
 .btn-link{
   background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(0,229,255,.08));
@@ -423,7 +494,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
   font-size:11px;padding:5px 11px;
 }
 .btn-link:hover{background:rgba(16,185,129,.25);}
-</style>
+/* legacy member styles (fallback) */
+.member-header{text-align:center;margin-bottom:24px;}
+.member-avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 14px;background:linear-gradient(135deg,var(--accent),var(--green));display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#000;}
+.member-name{font-size:22px;font-weight:800;margin-bottom:4px;color:var(--text);}
+.member-code{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:13px;color:var(--accent);background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.15);border-radius:8px;padding:4px 12px;letter-spacing:2px;}
+.mstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0;}
+.mstat{background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden;}
+.mstat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--mbar);}
+.mstat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.mstat-value{font-family:var(--mono);font-size:clamp(20px,4vw,28px);font-weight:700;line-height:1;}
+.mstat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.m-orders-title{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin:20px 0 12px;display:flex;align-items:center;gap:8px;}
+.m-orders-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.m-order-item{display:flex;align-items:center;gap:12px;padding:10px 13px;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+.m-order-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.m-order-info{flex:1;}
+.m-order-amt{font-size:13px;font-weight:600;color:var(--text);}
+.m-order-date{font-size:11px;color:var(--muted);margin-top:1px;}
+.m-order-comm{font-family:var(--mono);font-weight:700;color:var(--green);font-size:13px;}</style>
 </head>
 <body>
 
@@ -1520,94 +1609,122 @@ async function renderMemberPage(uid) {
   document.getElementById('btn-admin').style.display = 'none';
   document.querySelectorAll('.page').forEach(p=>{ p.classList.remove('on'); p.style.display='none'; });
   const pg = document.getElementById('pg-member');
-  pg.style.cssText = 'display:flex;align-items:center;justify-content:center;flex-direction:column;padding:80px 20px 40px;min-height:100vh;';
+  pg.style.cssText = '';
   pg.classList.add('on');
 
   const card = document.getElementById('member-card');
-  card.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">
-    <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px"></div>
-    กำลังโหลดข้อมูล...
-  </div>`;
+  card.innerHTML = `
+    <div class="mp-header">
+      <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div>
+      <div style="color:rgba(255,255,255,.7);font-size:13px">กำลังโหลดข้อมูล...</div>
+    </div>`;
 
   try {
     const data = await apiGet();
     const u = (data.users||[]).find(u=>u.id===uid);
-    if (!u) { card.innerHTML=`<div style="text-align:center;padding:40px;color:var(--red)">❌ ไม่พบสมาชิก</div>`; return; }
+    if (!u) {
+      card.innerHTML=`<div class="mp-body" style="text-align:center;padding:48px 24px;color:#ef4444">❌ ไม่พบสมาชิก<br><span style="font-size:12px;color:#94a3b8;display:block;margin-top:6px">กรุณาติดต่อแอดมิน</span></div>`;
+      return;
+    }
 
     const orders = (data.orders||[]).filter(o=>o.refCode===u.refCode);
     document.title = `ยอดค่าคอม — ${u.name}`;
 
-    const custRows = orders.length
+    // Tier calculation
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+    const monthlySales = orders.filter(o=>(+o.ts)>=startOfMonth).reduce((s,o)=>s+o.amt, 0);
+    const tier    = getTier(monthlySales);
+    const nxt     = getNextTier(monthlySales);
+    const tierPct = nxt ? Math.min(100,((monthlySales-tier.min)/(nxt.min-tier.min))*100) : 100;
+
+    // tier colors for white theme
+    const tc = {
+      Bronze: {c:'#92400e', bg:'#fef3c7', border:'#fde68a', grad:'#f59e0b,#d97706'},
+      Silver: {c:'#475569', bg:'#f1f5f9', border:'#cbd5e1', grad:'#94a3b8,#64748b'},
+      Gold:   {c:'#92400e', bg:'#fffbeb', border:'#fde68a', grad:'#f59e0b,#ea580c'},
+      Diamond:{c:'#0369a1', bg:'#eff6ff', border:'#bfdbfe', grad:'#3b82f6,#0ea5e9'},
+    }[tier.name] || {c:'#475569',bg:'#f1f5f9',border:'#e2e8f0',grad:'#94a3b8,#64748b'};
+
+    const orderRows = orders.length
       ? [...orders].sort((a,b)=>b.ts-a.ts).slice(0,10).map(o=>`
-          <div class="m-order-item">
-            <div class="m-order-dot"></div>
-            <div class="m-order-info">
-              <div class="m-order-amt">${o.customerName||'<span style="color:var(--muted);font-size:12px">ไม่ระบุชื่อ</span>'}</div>
-              <div class="m-order-date">${new Date(o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})} · ฿${fmt(o.amt)}</div>
+          <div class="mp-order">
+            <div class="mp-order-dot"></div>
+            <div class="mp-order-info">
+              <div class="mp-order-customer">${o.customerName||'<span style="color:#94a3b8;font-weight:400">ไม่ระบุชื่อ</span>'}</div>
+              <div class="mp-order-date">${new Date(+o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})} · ฿${fmti(o.amt)}</div>
             </div>
-            <div class="m-order-comm">+฿${fmt(o.commission)}</div>
+            <div class="mp-order-comm">+฿${fmt(o.commission)}</div>
           </div>`).join('')
-      : `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">ยังไม่มีออเดอร์ผ่านรหัสของคุณ</div>`;
+      : `<div style="text-align:center;padding:24px 0;color:#94a3b8;font-size:13px">ยังไม่มีออเดอร์ผ่านรหัสของคุณ</div>`;
 
     const now = new Date().toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
-    // คำนวณ tier จากออเดอร์เดือนนี้
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
-    const monthlySales = orders.filter(o=>o.ts*1000>=startOfMonth||o.ts>=startOfMonth).reduce((s,o)=>s+o.amt,0);
-    const tier = getTier(monthlySales);
-    const nextTier = getNextTier(monthlySales);
-    const tierPct = nextTier ? Math.min(100,((monthlySales-tier.min)/(nextTier.min-tier.min))*100) : 100;
-
     card.innerHTML = `
-      <div class="member-header">
-        <div class="member-avatar">${u.name.charAt(0).toUpperCase()}</div>
-        <div class="member-name">${u.name}</div>
-        <div class="member-code">📋 ${u.refCode}</div>
+      <!-- HEADER -->
+      <div class="mp-header">
+        <div class="mp-avatar">${u.name.charAt(0).toUpperCase()}</div>
+        <div class="mp-name">${u.name}</div>
+        <div class="mp-code">📋 ${u.refCode}</div>
       </div>
 
-      <!-- TIER CARD -->
-      <div style="background:${tier.bg};border:1px solid ${tier.border};border-radius:14px;padding:16px 18px;margin:16px 0;text-align:center">
-        <div style="font-size:32px;margin-bottom:4px">${tier.icon}</div>
-        <div style="font-size:18px;font-weight:800;color:${tier.color}">${tier.name}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">ค่าคอมเดือนนี้: <b style="color:${tier.color}">${tier.rate}%</b> · ยอดขาย ฿${fmti(monthlySales)}</div>
-        ${nextTier ? `
-        <div style="margin-top:10px">
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px">
-            <span>${tier.icon} ${tier.name}</span>
-            <span>อีก ฿${fmti(nextTier.min-monthlySales)} → ${nextTier.icon} ${nextTier.name} (${nextTier.rate}%+โบนัส ฿${fmti(nextTier.bonus)})</span>
+      <div class="mp-body">
+        <!-- TIER -->
+        <div class="mp-tier" style="--tc:${tc.c};--tbg:${tc.bg};border-color:${tc.border}">
+          <div class="mp-tier-icon">${tier.icon}</div>
+          <div class="mp-tier-info">
+            <div class="mp-tier-name">${tier.name}</div>
+            <div class="mp-tier-rate">ค่าคอมเดือนนี้ <b style="color:${tc.c}">${tier.rate}%</b> · ยอดขาย ฿${fmti(monthlySales)}</div>
+            ${nxt ? `
+            <div class="mp-progress-wrap">
+              <div class="mp-progress-label">
+                <span>ความคืบหน้า</span>
+                <span>อีก ฿${fmti(nxt.min-monthlySales)} → ${nxt.icon}${nxt.name}</span>
+              </div>
+              <div class="mp-progress-bar">
+                <div class="mp-progress-fill" style="width:${tierPct}%;background:linear-gradient(90deg,${tc.grad})"></div>
+              </div>
+            </div>` : `<div style="font-size:11px;color:#0369a1;margin-top:6px;font-weight:700">🏆 ระดับสูงสุดแล้ว!</div>`}
           </div>
-          <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden">
-            <div style="height:100%;width:${tierPct}%;background:linear-gradient(90deg,${tier.color},${nextTier.color});border-radius:4px"></div>
+        </div>
+
+        <!-- STATS -->
+        <div class="mp-stats">
+          <div class="mp-stat" style="--sb:linear-gradient(90deg,#10b981,#059669);--sc:#065f46">
+            <div class="mp-stat-label">ค่าคอมสะสม</div>
+            <div class="mp-stat-value">฿${fmt(u.totalComm||0)}</div>
+            <div class="mp-stat-sub">จาก ${u.orderCount||0} ออเดอร์</div>
           </div>
-        </div>` : `<div style="font-size:11px;color:var(--accent);margin-top:8px">🏆 ระดับสูงสุดแล้ว!</div>`}
+          <div class="mp-stat" style="--sb:linear-gradient(90deg,#f59e0b,#ea580c);--sc:#92400e">
+            <div class="mp-stat-label">รอรับเงิน</div>
+            <div class="mp-stat-value">฿${fmt(u.pendingComm||0)}</div>
+            <div class="mp-stat-sub">ยังไม่ได้โอน</div>
+          </div>
+          <div class="mp-stat mp-stat-full" style="--sb:linear-gradient(90deg,#3b82f6,#0ea5e9);--sc:#1e40af">
+            <div class="mp-stat-label">รับไปแล้ว</div>
+            <div class="mp-stat-value">฿${fmt(u.paidComm||0)}</div>
+            <div class="mp-stat-sub">โอนเข้าบัญชีแล้ว</div>
+          </div>
+        </div>
+
+        <!-- ORDERS -->
+        <div class="mp-section-title">ออเดอร์ล่าสุด</div>
+        ${orderRows}
       </div>
-      <div class="mstats">
-        <div class="mstat" style="--mbar:linear-gradient(90deg,var(--green),var(--accent))">
-          <div class="mstat-label">💸 ค่าคอมสะสม</div>
-          <div class="mstat-value cg">฿${fmt(u.totalComm||0)}</div>
-          <div class="mstat-sub">จาก ${u.orderCount||0} ออเดอร์</div>
-        </div>
-        <div class="mstat" style="--mbar:linear-gradient(90deg,var(--gold),#f97316)">
-          <div class="mstat-label">⏳ รอรับเงิน</div>
-          <div class="mstat-value co">฿${fmt(u.pendingComm||0)}</div>
-          <div class="mstat-sub">ยังไม่ได้โอน</div>
-        </div>
-        <div class="mstat" style="--mbar:linear-gradient(90deg,var(--accent),var(--p2));grid-column:span 2">
-          <div class="mstat-label">✅ รับไปแล้ว</div>
-          <div class="mstat-value" style="color:var(--accent)">฿${fmt(u.paidComm||0)}</div>
-          <div class="mstat-sub">โอนแล้ว</div>
-        </div>
-      </div>
-      <div class="m-orders-title">ออเดอร์ล่าสุด</div>
-      ${custRows}
-      <div style="margin-top:16px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;">
-        <span>🕐 อัปเดตล่าสุด ${now}</span>
-        <button onclick="renderMemberPage('${uid}')" style="background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.18);border-radius:6px;padding:3px 10px;color:var(--accent);font-size:11px;cursor:pointer;font-family:var(--body);">🔄 รีเฟรช</button>
+
+      <!-- FOOTER -->
+      <div class="mp-footer">
+        <span>🕐 ${now}</span>
+        <button class="mp-refresh" onclick="renderMemberPage('${uid}')">🔄 รีเฟรช</button>
       </div>
     `;
   } catch(e) {
-    card.innerHTML=`<div style="text-align:center;padding:40px;color:var(--red)">❌ โหลดข้อมูลไม่สำเร็จ<br><span style="font-size:12px;color:var(--muted)">${e.message}</span><br><br>
-      <button onclick="renderMemberPage('${uid}')" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 18px;color:var(--text);cursor:pointer;font-family:var(--body);">ลองใหม่</button></div>`;
+    card.innerHTML=`
+      <div class="mp-body" style="text-align:center;padding:48px 24px">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div style="color:#ef4444;font-weight:700;margin-bottom:6px">โหลดข้อมูลไม่สำเร็จ</div>
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:20px">${e.message}</div>
+        <button class="mp-refresh" onclick="renderMemberPage('${uid}')" style="padding:8px 20px">ลองใหม่</button>
+      </div>`;
   }
 }
 
