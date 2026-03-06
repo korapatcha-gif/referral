@@ -1662,7 +1662,7 @@ async function renderMemberPage(uid) {
       <div class="mp-header">
         <div class="mp-avatar">${u.name.charAt(0).toUpperCase()}</div>
         <div class="mp-name">${u.name}</div>
-        <div class="mp-code" id="mp-code-btn" onclick="navigator.clipboard.writeText('${u.refCode}').then(()=>{const el=document.getElementById('mp-code-btn');el.innerHTML='✅ คัดลอกแล้ว!';el.style.background='rgba(16,185,129,.25)';setTimeout(()=>{el.innerHTML='📋 &nbsp;${u.refCode}';el.style.background=''},2000)})" style="cursor:pointer;user-select:none;transition:all .2s;" title="แตะเพื่อคัดลอกรหัส">📋 &nbsp;${u.refCode}</div>
+        <div class="mp-code" id="mp-code-btn" onclick="copyRefCode('${u.refCode}')" style="cursor:pointer;user-select:none;transition:all .2s;" title="แตะเพื่อคัดลอกรหัส">📋 &nbsp;${u.refCode}</div>
       </div>
 
       <div class="mp-body">
@@ -1723,6 +1723,41 @@ async function renderMemberPage(uid) {
         <div style="font-size:12px;color:#94a3b8;margin-bottom:20px">${e.message}</div>
         <button class="mp-refresh" onclick="renderMemberPage('${uid}')" style="padding:8px 20px">ลองใหม่</button>
       </div>`;
+  }
+}
+
+function copyRefCode(code) {
+  const el = document.getElementById('mp-code-btn');
+  const ok = () => {
+    el.innerHTML = '✅ คัดลอกแล้ว!';
+    el.style.background = 'rgba(16,185,129,.25)';
+    setTimeout(() => { el.innerHTML = '📋 &nbsp;' + code; el.style.background = ''; }, 2000);
+  };
+
+  // วิธีที่ 1: Clipboard API (desktop + modern mobile)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(ok).catch(() => fallback());
+  } else {
+    fallback();
+  }
+
+  // วิธีที่ 2: execCommand fallback (iOS Safari, LINE browser)
+  function fallback() {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = code;
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, 9999); // iOS ต้องการบรรทัดนี้
+      const success = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (success) ok();
+      else { el.innerHTML = '📋 ' + code + ' (กดค้างเพื่อ copy)'; }
+    } catch(e) {
+      el.innerHTML = '📋 ' + code + ' (กดค้างเพื่อ copy)';
+    }
   }
 }
 
