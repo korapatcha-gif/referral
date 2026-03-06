@@ -1106,27 +1106,10 @@ function showSuccess(order, ref){
 
 function staffCopyLink() {
   if (!staffRef) return;
-  const u = DB.users.find(u=>u.id===staffRef.id);
-  if (!u) { toast('ไม่พบสมาชิก','error'); return; }
-
-  const orders = DB.orders.filter(o=>o.refCode===u.refCode)
-    .map(o=>[Math.round(o.ts/1000), o.amt, o.commission, o.customerName||'']);
-  const p = {
-    n:u.name, r:u.refCode,
-    tc:u.totalComm||0, pc:u.pendingComm||0, pd:u.paidComm||0,
-    oc:u.orderCount||0, o:orders
-  };
-  const j = JSON.stringify(p);
-  const bytes = new TextEncoder().encode(j);
-  const b64 = btoa(String.fromCharCode(...bytes));
-  const encoded = b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-
-  // ใช้ origin + pathname เท่านั้น ไม่เอา query string เดิม
   const base = window.location.origin + window.location.pathname;
-  const url  = base + '?m=' + encoded;
-
+  const url  = base + '?uid=' + staffRef.id;
   navigator.clipboard.writeText(url)
-    .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + u.name + ' ได้เลย','success'))
+    .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + staffRef.name + ' ได้เลย','success'))
     .catch(()=> { prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url); });
 }
 
@@ -1435,169 +1418,134 @@ async function clearAll(){
 }
 
 // ════════════════════════════════════════════
-// MEMBER PORTAL
+// MEMBER PORTAL — Real-time from Sheets
 // ════════════════════════════════════════════
 
-// --- encode / decode ---
-function encodeMember(userId) {
-  const u = DB.users.find(u=>u.id===userId);
-  if (!u) return null;
-  // เก็บเฉพาะ orders ที่เกี่ยวกับ user นี้
-  const orders = DB.orders.filter(o=>o.refCode===u.refCode).map(o=>({
-    ts:o.ts, amt:o.amt, commission:o.commission, rate:o.rate
-  }));
-  const payload = {
-    id: u.id, name: u.name, refCode: u.refCode,
-    totalComm: u.totalComm||0,
-    pendingComm: u.pendingComm||0,
-    paidComm: u.paidComm||0,
-    totalSales: u.totalSales||0,
-    orderCount: u.orderCount||0,
-    orders,
-    generatedAt: Date.now()
-  };
-  return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-}
-
-function decodeMember(encoded) {
-  try {
-    const b64 = encoded.replace(/-/g,'+').replace(/_/g,'/');
-    const raw = atob(b64);
-    // ลอง decode เป็น UTF-8 bytes ก่อน (format ใหม่)
-    let json;
-    try {
-      const bytes = Uint8Array.from(raw, c=>c.charCodeAt(0));
-      json = new TextDecoder().decode(bytes);
-    } catch {
-      // fallback: format เก่าที่ใช้ encodeURIComponent
-      json = decodeURIComponent(raw);
-    }
-    const d = JSON.parse(json);
-    // รองรับ format ใหม่ (key สั้น) และ format เก่า
-    if (d.n) {
-      return {
-        name: d.n, refCode: d.r,
-        totalComm: d.tc||0, pendingComm: d.pc||0, paidComm: d.pd||0,
-        orderCount: d.oc||0,
-        orders: (d.o||[]).map(o=>Array.isArray(o)
-          ? {ts:o[0]*1000, amt:o[1], commission:o[2], customerName:o[3]||''}
-          : o),
-        generatedAt: Date.now()
-      };
-    }
-    return d; // format เก่า
-  } catch(e) {
-    console.error('decodeMember error:', e);
-    return null;
-  }
-}
-
-// --- copy link ---
+// --- copy link (ใช้แค่ uid) ---
 function copyMemberLink(userId) {
   const u = DB.users.find(u=>u.id===userId);
   if (!u) { toast('ไม่พบสมาชิก','error'); return; }
-
-  // key สั้น + เก็บเฉพาะที่จำเป็น = URL สั้นลง ~60%
-  const orders = DB.orders.filter(o=>o.refCode===u.refCode)
-    .map(o=>[Math.round(o.ts/1000), o.amt, o.commission, o.customerName||'']);
-
-  const p = {
-    n:u.name, r:u.refCode,
-    tc:u.totalComm||0, pc:u.pendingComm||0, pd:u.paidComm||0,
-    oc:u.orderCount||0, o:orders
-  };
-
-  // encode UTF-8 bytes โดยตรง = URL สั้นกว่า %XX encoding ~50%
-  const j = JSON.stringify(p);
-  const bytes = new TextEncoder().encode(j);
-  const b64 = btoa(String.fromCharCode(...bytes));
-  const encoded = b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-
   const base = window.location.origin + window.location.pathname;
-  const url  = base + '?m=' + encoded;
-
+  const url  = base + '?uid=' + userId;
   navigator.clipboard.writeText(url)
     .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + u.name + ' ได้เลย','success'))
     .catch(()=> { prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url); });
 }
 
-// --- render member page ---
-function renderMemberPage(data) {
+function staffCopyLinkByUid() {
+  if (!staffRef) return;
+  const base = window.location.origin + window.location.pathname;
+  const url  = base + '?uid=' + staffRef.id;
+  navigator.clipboard.writeText(url)
+    .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + staffRef.name + ' ได้เลย','success'))
+    .catch(()=> { prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url); });
+}
+
+// --- render member page (real-time) ---
+async function renderMemberPage(uid) {
   document.getElementById('btn-staff').style.display = 'none';
   document.getElementById('btn-admin').style.display = 'none';
-
-  const card    = document.getElementById('member-card');
-  const initial = data.name.charAt(0).toUpperCase();
-  const genDate = new Date(data.generatedAt).toLocaleDateString('th-TH',{day:'2-digit',month:'long',year:'numeric'});
-
-  // ลูกค้าล่าสุด (เรียงจากใหม่ไปเก่า)
-  const custRows = data.orders && data.orders.length
-    ? [...data.orders].sort((a,b)=>b.ts-a.ts).slice(0,10).map(o=>`
-        <div class="m-order-item">
-          <div class="m-order-dot"></div>
-          <div class="m-order-info">
-            <div class="m-order-amt">${o.customerName||'<span style="color:var(--muted);font-size:12px">ไม่ระบุชื่อ</span>'}</div>
-            <div class="m-order-date">${new Date(o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})} · ฿${fmt(o.amt)}</div>
-          </div>
-          <div class="m-order-comm">+฿${fmt(o.commission)}</div>
-        </div>`).join('')
-    : `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">ยังไม่มีออเดอร์ผ่านรหัสของคุณ</div>`;
-
-  card.innerHTML = `
-    <div class="member-header">
-      <div class="member-avatar">${initial}</div>
-      <div class="member-name">${data.name}</div>
-      <div class="member-code">📋 ${data.refCode}</div>
-    </div>
-    <div class="mstats">
-      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--green),var(--accent))">
-        <div class="mstat-label">💸 ค่าคอมสะสม</div>
-        <div class="mstat-value cg">฿${fmt(data.totalComm)}</div>
-        <div class="mstat-sub">จาก ${data.orderCount} ออเดอร์</div>
-      </div>
-      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--gold),#f97316)">
-        <div class="mstat-label">⏳ รอรับเงิน</div>
-        <div class="mstat-value co">฿${fmt(data.pendingComm)}</div>
-        <div class="mstat-sub">ยังไม่ได้โอน</div>
-      </div>
-      <div class="mstat" style="--mbar:linear-gradient(90deg,var(--accent),var(--p2));grid-column:span 2">
-        <div class="mstat-label">✅ รับไปแล้ว</div>
-        <div class="mstat-value" style="color:var(--accent)">฿${fmt(data.paidComm)}</div>
-        <div class="mstat-sub">โอนแล้ว</div>
-      </div>
-    </div>
-    <div class="m-orders-title" style="display:none"></div>
-    <div style="margin-top:20px;padding:12px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted);text-align:center;line-height:1.8">
-      ข้อมูล ณ วันที่ ${genDate}<br>สอบถามยอดล่าสุดได้ที่แอดมิน
-    </div>
-  `;
-
   document.querySelectorAll('.page').forEach(p=>{ p.classList.remove('on'); p.style.display='none'; });
   const pg = document.getElementById('pg-member');
   pg.style.cssText = 'display:flex;align-items:center;justify-content:center;flex-direction:column;padding:80px 20px 40px;min-height:100vh;';
   pg.classList.add('on');
-  document.title = `ยอดค่าคอม — ${data.name}`;
+
+  const card = document.getElementById('member-card');
+  card.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)">
+    <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px"></div>
+    กำลังโหลดข้อมูล...
+  </div>`;
+
+  try {
+    const data = await apiGet();
+    const u = (data.users||[]).find(u=>u.id===uid);
+    if (!u) { card.innerHTML=`<div style="text-align:center;padding:40px;color:var(--red)">❌ ไม่พบสมาชิก</div>`; return; }
+
+    const orders = (data.orders||[]).filter(o=>o.refCode===u.refCode);
+    document.title = `ยอดค่าคอม — ${u.name}`;
+
+    const custRows = orders.length
+      ? [...orders].sort((a,b)=>b.ts-a.ts).slice(0,10).map(o=>`
+          <div class="m-order-item">
+            <div class="m-order-dot"></div>
+            <div class="m-order-info">
+              <div class="m-order-amt">${o.customerName||'<span style="color:var(--muted);font-size:12px">ไม่ระบุชื่อ</span>'}</div>
+              <div class="m-order-date">${new Date(o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})} · ฿${fmt(o.amt)}</div>
+            </div>
+            <div class="m-order-comm">+฿${fmt(o.commission)}</div>
+          </div>`).join('')
+      : `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">ยังไม่มีออเดอร์ผ่านรหัสของคุณ</div>`;
+
+    const now = new Date().toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+    card.innerHTML = `
+      <div class="member-header">
+        <div class="member-avatar">${u.name.charAt(0).toUpperCase()}</div>
+        <div class="member-name">${u.name}</div>
+        <div class="member-code">📋 ${u.refCode}</div>
+      </div>
+      <div class="mstats">
+        <div class="mstat" style="--mbar:linear-gradient(90deg,var(--green),var(--accent))">
+          <div class="mstat-label">💸 ค่าคอมสะสม</div>
+          <div class="mstat-value cg">฿${fmt(u.totalComm||0)}</div>
+          <div class="mstat-sub">จาก ${u.orderCount||0} ออเดอร์</div>
+        </div>
+        <div class="mstat" style="--mbar:linear-gradient(90deg,var(--gold),#f97316)">
+          <div class="mstat-label">⏳ รอรับเงิน</div>
+          <div class="mstat-value co">฿${fmt(u.pendingComm||0)}</div>
+          <div class="mstat-sub">ยังไม่ได้โอน</div>
+        </div>
+        <div class="mstat" style="--mbar:linear-gradient(90deg,var(--accent),var(--p2));grid-column:span 2">
+          <div class="mstat-label">✅ รับไปแล้ว</div>
+          <div class="mstat-value" style="color:var(--accent)">฿${fmt(u.paidComm||0)}</div>
+          <div class="mstat-sub">โอนแล้ว</div>
+        </div>
+      </div>
+      <div class="m-orders-title">ออเดอร์ล่าสุด</div>
+      ${custRows}
+      <div style="margin-top:16px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span>🕐 อัปเดตล่าสุด ${now}</span>
+        <button onclick="renderMemberPage('${uid}')" style="background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.18);border-radius:6px;padding:3px 10px;color:var(--accent);font-size:11px;cursor:pointer;font-family:var(--body);">🔄 รีเฟรช</button>
+      </div>
+    `;
+  } catch(e) {
+    card.innerHTML=`<div style="text-align:center;padding:40px;color:var(--red)">❌ โหลดข้อมูลไม่สำเร็จ<br><span style="font-size:12px;color:var(--muted)">${e.message}</span><br><br>
+      <button onclick="renderMemberPage('${uid}')" style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 18px;color:var(--text);cursor:pointer;font-family:var(--body);">ลองใหม่</button></div>`;
+  }
 }
 
 // --- check URL on load ---
 function checkMemberUrl() {
-  const params  = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
+  // รองรับทั้ง ?uid= (ใหม่ real-time) และ ?m= (เก่า)
+  const uid = params.get('uid');
+  if (uid) { renderMemberPage(uid); return true; }
+
+  // fallback: รองรับลิ้งเก่า ?m=
   const encoded = params.get('m') || params.get('member');
-  if (!encoded) return false;
-  const data = decodeMember(encoded);
-  if (!data || !data.name) {
-    // แสดง error หลัง DOM พร้อม
-    setTimeout(()=> toast('ลิ้งไม่ถูกต้องหรือหมดอายุ','error'), 300);
+  if (encoded) {
+    // แสดงผลจาก encoded data แต่แจ้งให้ขอลิ้งใหม่
+    try {
+      const b64 = encoded.replace(/-/g,'+').replace(/_/g,'/');
+      const raw = atob(b64);
+      const bytes = Uint8Array.from(raw, c=>c.charCodeAt(0));
+      const d = JSON.parse(new TextDecoder().decode(bytes));
+      const name = d.n||d.name||'';
+      if (name) {
+        setTimeout(()=> toast('⚠️ ลิ้งนี้เป็นแบบเก่า ขอลิ้งใหม่จากพนักงานเพื่อดูยอด real-time','warning'), 500);
+        // redirect ไปหา uid ถ้ามี
+        if (d.id) { renderMemberPage(d.id); return true; }
+      }
+    } catch(e){}
+    setTimeout(()=> toast('ลิ้งไม่ถูกต้อง กรุณาขอลิ้งใหม่จากพนักงาน','error'), 300);
     return false;
   }
-  renderMemberPage(data);
-  return true;
+  return false;
 }
 
 // ─── INIT ──────────────────────────────
 if (!checkMemberUrl()) {
   if (API_URL === 'YOUR_APPS_SCRIPT_URL') {
-    // ยังไม่ได้ใส่ URL — โหลด demo แทน
     loadDemo();
   } else {
     loadFromSheets();
