@@ -417,6 +417,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
   font-size:15px;color:rgba(255,255,255,.95);letter-spacing:3px;
   font-family:'Space Mono',monospace;
 }
+.mp-code:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5);}
+.mp-code:active{transform:scale(.96);}
 
 /* ── body ── */
 .mp-body{ padding:28px 24px 32px; }
@@ -1660,7 +1662,7 @@ async function renderMemberPage(uid) {
       <div class="mp-header">
         <div class="mp-avatar">${u.name.charAt(0).toUpperCase()}</div>
         <div class="mp-name">${u.name}</div>
-        <div class="mp-code">📋 ${u.refCode}</div>
+        <div class="mp-code" id="mp-code-btn" onclick="navigator.clipboard.writeText('${u.refCode}').then(()=>{const el=document.getElementById('mp-code-btn');el.innerHTML='✅ คัดลอกแล้ว!';el.style.background='rgba(16,185,129,.25)';setTimeout(()=>{el.innerHTML='📋 &nbsp;${u.refCode}';el.style.background=''},2000)})" style="cursor:pointer;user-select:none;transition:all .2s;" title="แตะเพื่อคัดลอกรหัส">📋 &nbsp;${u.refCode}</div>
       </div>
 
       <div class="mp-body">
