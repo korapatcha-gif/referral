@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Referral & Commission System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -19,6 +21,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:linear-gradient(rgba(0,229,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.02) 1px,transparent 1px);
   background-size:48px 48px;}
+
+/* ─── SKELETON ─── */
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.skel{border-radius:8px;background:linear-gradient(90deg,var(--border) 25%,var(--s3) 50%,var(--border) 75%);background-size:1200px 100%;animation:shimmer 1.5s infinite linear;}
+.skel-h{height:14px;margin-bottom:8px;}
+.skel-val{height:32px;width:60%;margin-bottom:6px;}
+.skel-sm{height:10px;width:45%;}
+.skel-full{height:10px;width:100%;}
+.skel-stat{height:80px;border-radius:16px;}
 
 /* ─── MODE SWITCHER ─── */
 .mode-bar{
@@ -486,31 +498,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 }
 .mp-refresh:hover{border-color:#3b82f6;color:#3b82f6;}
 
+/* member skeleton */
+.mp-skel-header{
+  background:linear-gradient(135deg,#1e3a5f,#2d5282);
+  padding:36px 28px 52px;text-align:center;
+}
+.mp-skel-avatar{width:80px;height:80px;border-radius:50%;margin:0 auto 14px;}
+.mp-skel-name{height:28px;width:55%;margin:0 auto 10px;border-radius:8px;}
+.mp-skel-code{height:32px;width:40%;margin:0 auto;border-radius:20px;}
+.mp-skel-body{padding:28px 24px 32px;background:#fff;}
+.mp-skel-tier{height:100px;border-radius:16px;margin-bottom:20px;}
+.mp-skel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.mp-skel-stat{height:90px;border-radius:16px;}
+.mp-skel-stat-full{grid-column:span 2;height:70px;border-radius:16px;}
+.mp-skel-row{height:72px;border-radius:12px;margin-bottom:10px;}
+/* member skeleton shimmer override — lighter on white bg */
+.mp-skel-body .skel{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);background-size:1200px 100%;}
+
 .btn-link{
   background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(0,229,255,.08));
   border:1px solid rgba(16,185,129,.25);color:var(--green);
   font-size:11px;padding:5px 11px;
 }
 .btn-link:hover{background:rgba(16,185,129,.25);}
-/* legacy member styles (fallback) */
-.member-header{text-align:center;margin-bottom:24px;}
-.member-avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 14px;background:linear-gradient(135deg,var(--accent),var(--green));display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#000;}
-.member-name{font-size:22px;font-weight:800;margin-bottom:4px;color:var(--text);}
-.member-code{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:13px;color:var(--accent);background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.15);border-radius:8px;padding:4px 12px;letter-spacing:2px;}
-.mstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0;}
-.mstat{background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden;}
-.mstat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--mbar);}
-.mstat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
-.mstat-value{font-family:var(--mono);font-size:clamp(20px,4vw,28px);font-weight:700;line-height:1;}
-.mstat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
-.m-orders-title{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin:20px 0 12px;display:flex;align-items:center;gap:8px;}
-.m-orders-title::after{content:'';flex:1;height:1px;background:var(--border);}
-.m-order-item{display:flex;align-items:center;gap:12px;padding:10px 13px;background:var(--s2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
-.m-order-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
-.m-order-info{flex:1;}
-.m-order-amt{font-size:13px;font-weight:600;color:var(--text);}
-.m-order-date{font-size:11px;color:var(--muted);margin-top:1px;}
-.m-order-comm{font-family:var(--mono);font-weight:700;color:var(--green);font-size:13px;}</style>
+</style>
 </head>
 <body>
 
@@ -562,16 +573,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 
 <div id="toasts"></div>
 
-<!-- ══════════════════════════════
-     MEMBER PORTAL PAGE
-══════════════════════════════ -->
+<!-- MEMBER PAGE -->
 <div id="pg-member" class="page" style="display:none;align-items:center;justify-content:center;flex-direction:column;padding:80px 20px 40px;">
   <div class="member-card" id="member-card"></div>
 </div>
 
-<!-- ══════════════════════════════
-     STAFF PAGE
-══════════════════════════════ -->
+<!-- STAFF PAGE -->
 <div id="pg-staff" class="page on">
   <div class="staff-card">
     <div class="staff-logo">
@@ -631,19 +638,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
     </button>
   </div>
 
-  <!-- RECENT -->
   <div class="recent-wrap" id="s-recent" style="display:none;margin-top:14px;">
     <div class="recent-title">ออเดอร์ที่บันทึกแล้ววันนี้</div>
     <div id="s-recent-list"></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════
-     ADMIN PAGE
-══════════════════════════════ -->
+<!-- ADMIN PAGE -->
 <div id="pg-admin" class="page">
   <div class="awrap">
-    <!-- STATS -->
     <div class="stats">
       <div class="sc" style="--bar:linear-gradient(90deg,var(--accent),#0284c7)"><div class="sl">👥 สมาชิก</div><div class="sv" id="a-s0">0</div></div>
       <div class="sc" style="--bar:linear-gradient(90deg,var(--green),#059669)"><div class="sl">🛒 ออเดอร์</div><div class="sv" id="a-s1">0</div></div>
@@ -651,16 +654,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
       <div class="sc" style="--bar:linear-gradient(90deg,#f59e0b,#f97316)"><div class="sl">⏳ รอจ่าย</div><div class="sv co" id="a-s3">0</div><div class="ss">บาท</div></div>
       <div class="sc" style="--bar:linear-gradient(90deg,var(--green),var(--accent))"><div class="sl">✅ จ่ายแล้ว</div><div class="sv cg" id="a-s4">0</div><div class="ss">บาท</div></div>
     </div>
-
-    <!-- TABS -->
     <div class="tabs">
       <button class="tb on" onclick="aTab('users')">👤 สมาชิก</button>
       <button class="tb"    onclick="aTab('orders')">📋 ออเดอร์</button>
       <button class="tb"    onclick="aTab('comm')">💸 ค่าคอม</button>
       <button class="tb"    onclick="aTab('board')">🏆 Leaderboard</button>
     </div>
-
-    <!-- USERS -->
     <div class="pn on" id="pn-users">
       <div class="card">
         <div class="ct">➕ เพิ่มสมาชิกใหม่</div>
@@ -698,7 +697,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
           </table>
         </div>
       </div>
-      <!-- PIN CHANGE -->
       <div class="card">
         <div class="ct">🔐 ความปลอดภัย — เปลี่ยน Admin PIN</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
@@ -730,8 +728,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
         </div>
       </div>
     </div>
-
-    <!-- COMMISSION -->
     <div class="pn" id="pn-comm">
       <div class="card">
         <div class="ct">💸 สรุปค่าคอมรายบุคคล</div>
@@ -747,8 +743,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
         <div id="a-plog"><div class="emp"><div class="ic">🧾</div>ยังไม่มีการจ่ายเงิน</div></div>
       </div>
     </div>
-
-    <!-- LEADERBOARD -->
     <div class="pn" id="pn-board">
       <div class="two">
         <div>
@@ -788,6 +782,34 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;heigh
 // ════════════════════════════════════════════════════════════
 let API_URL = 'https://script.google.com/macros/s/AKfycbyFZj2BhDrlkhfZy7GoRHF3E4CzzI9PqW4bBqxYNvAxRAdc9ZOKwbXAfnmFwPcyD_Hh/exec';
 
+// ════════════════════════════════════════════════════════════
+//  CACHE SYSTEM — โหลดเร็วขึ้นด้วย localStorage
+// ════════════════════════════════════════════════════════════
+const CACHE_KEY     = 'refcomm_db_v1';
+const CACHE_TTL     = 5 * 60 * 1000;   // 5 นาที
+const MEM_CACHE_KEY = 'refcomm_mem_v1'; // member page cache
+
+function saveCache(data) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+}
+function loadCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (c && Date.now() - c.ts < CACHE_TTL) return c.data;
+  } catch(e) {}
+  return null;
+}
+function saveMemberCache(uid, data) {
+  try { localStorage.setItem(MEM_CACHE_KEY + uid, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+}
+function loadMemberCache(uid) {
+  try {
+    const c = JSON.parse(localStorage.getItem(MEM_CACHE_KEY + uid) || 'null');
+    if (c && Date.now() - c.ts < CACHE_TTL) return c.data;
+  } catch(e) {}
+  return null;
+}
+
 async function apiGet() {
   const r = await fetch(API_URL + '?action=load');
   const text = await r.text();
@@ -797,7 +819,6 @@ async function apiGet() {
   return d.data;
 }
 async function apiPost(body) {
-  // ส่งแบบ form POST — Apps Script doPost รองรับ
   const form = new FormData();
   form.append('payload', JSON.stringify(body));
   try {
@@ -808,7 +829,6 @@ async function apiPost(body) {
     if (!d.ok) throw new Error(d.error||'unknown error');
     return d.data || {};
   } catch(e) {
-    // ถ้า CORS block ให้ fallback ไป GET payload
     const payload = encodeURIComponent(JSON.stringify(body));
     const r2 = await fetch(API_URL + '?payload=' + payload);
     const text2 = await r2.text();
@@ -818,8 +838,70 @@ async function apiPost(body) {
     return d2.data || {};
   }
 }
+
+// ════════════════════════════════════════════════════════════
+//  SKELETON LOADING — แสดงขณะรอ API
+// ════════════════════════════════════════════════════════════
+function showAdminSkeleton() {
+  // stats skeleton
+  document.querySelectorAll('.sc .sv').forEach(el => {
+    el.innerHTML = '<div class="skel" style="height:24px;width:60%;border-radius:6px"></div>';
+  });
+  // tables skeleton
+  ['a-tb-u','a-tb-o','a-tb-c'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = Array.from({length:4}, () => `
+      <tr>${Array.from({length:6},()=>`<td><div class="skel" style="height:12px;width:${60+Math.random()*30}%;border-radius:4px"></div></td>`).join('')}</tr>
+    `).join('');
+  });
+  document.getElementById('a-lb').innerHTML =
+    Array.from({length:3},()=>`<div class="lbi"><div class="skel" style="width:30px;height:30px;border-radius:50%"></div><div style="flex:1"><div class="skel skel-h" style="width:55%"></div><div class="skel skel-sm"></div></div></div>`).join('');
+}
+
+function showMemberSkeleton(card) {
+  card.innerHTML = `
+    <div class="mp-skel-header">
+      <div class="skel mp-skel-avatar"></div>
+      <div class="skel mp-skel-name"></div>
+      <div class="skel mp-skel-code"></div>
+    </div>
+    <div class="mp-skel-body">
+      <div class="skel mp-skel-tier"></div>
+      <div class="mp-skel-grid">
+        <div class="skel mp-skel-stat"></div>
+        <div class="skel mp-skel-stat"></div>
+        <div class="skel mp-skel-stat-full"></div>
+      </div>
+      <div class="skel mp-skel-row"></div>
+      <div class="skel mp-skel-row"></div>
+      <div class="skel mp-skel-row"></div>
+    </div>`;
+}
+
 async function loadFromSheets() {
-  showLoading(true);
+  // แสดง cache ทันที ไม่ต้องรอ
+  const cached = loadCache();
+  if (cached) {
+    DB.users   = cached.users   || [];
+    DB.orders  = cached.orders  || [];
+    DB.payouts = cached.payouts || [];
+    DB.rate    = cached.rate    || 2;
+    DB.log     = [];
+    renderAdmin();
+    document.getElementById('a-rs') && (document.getElementById('a-rs').value = DB.rate);
+    document.getElementById('a-rb') && (document.getElementById('a-rb').innerHTML = DB.rate + '<span>%</span>');
+    // โหลด API ใน background เงียบๆ
+    refreshFromAPI(true);
+  } else {
+    // ไม่มี cache → skeleton + โหลด API
+    showAdminSkeleton();
+    refreshFromAPI(false);
+  }
+}
+
+async function refreshFromAPI(silent = false) {
+  if (!silent) showLoading(true);
   try {
     const data = await apiGet();
     DB.users   = data.users   || [];
@@ -827,14 +909,19 @@ async function loadFromSheets() {
     DB.payouts = data.payouts || [];
     DB.rate    = data.rate    || 2;
     DB.log     = [];
+    saveCache(data);
     renderAdmin();
-    const sl = document.getElementById('rate-slider');
-    if(sl){ sl.value=DB.rate; document.getElementById('rate-val').textContent=DB.rate; }
-    toast('โหลดข้อมูลสำเร็จ ✓','info');
+    const sl = document.getElementById('a-rs');
+    if(sl){ sl.value=DB.rate; document.getElementById('a-rb').innerHTML=DB.rate+'<span>%</span>'; }
+    if (!silent) toast('โหลดข้อมูลสำเร็จ ✓','info');
+    else toast('🔄 อัปเดตข้อมูลแล้ว','info');
   } catch(e) {
-    toast('โหลดข้อมูลไม่สำเร็จ: '+e.message,'error');
-  } finally { showLoading(false); }
+    if (!silent) toast('โหลดข้อมูลไม่สำเร็จ: '+e.message,'error');
+  } finally {
+    if (!silent) showLoading(false);
+  }
 }
+
 function showLoading(on) {
   let el = document.getElementById('gl');
   if (!el) {
@@ -842,23 +929,14 @@ function showLoading(on) {
     el.style.cssText='position:fixed;inset:0;background:rgba(7,9,15,.85);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;backdrop-filter:blur(4px);';
     el.innerHTML='<div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite"></div><span style="font-size:13px;color:var(--muted)">กำลังโหลดข้อมูล...</span>';
     document.body.appendChild(el);
-    const s=document.createElement('style'); s.textContent='@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(s);
   }
   el.style.display=on?'flex':'none';
 }
 
 // ════════════════════════════════════════════
-// SINGLE SHARED DATA STORE
-// ข้อมูลทุกอย่างอยู่ที่นี่ที่เดียว
-// ทั้งพนักงานและ Admin อ่าน/เขียนที่เดียวกัน
+// DATA STORE
 // ════════════════════════════════════════════
-let DB = {
-  users:   [],
-  orders:  [],
-  payouts: [],
-  log:     [],
-  rate:    2
-};
+let DB = { users:[], orders:[], payouts:[], log:[], rate:2 };
 
 // ─── UTILS ───────────────────────────────────
 function fmt(n){ return(+n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -867,7 +945,7 @@ function ft(ts){ return new Date(ts).toLocaleString('th-TH',{day:'2-digit',month
 function calcComm(amt, rate){ return Math.round(amt * (rate||DB.rate) * 100) / 10000; }
 
 // ════════════════════════════════════════════
-// TIER SYSTEM — ระบบค่าคอมขั้นบันได
+// TIER SYSTEM
 // ════════════════════════════════════════════
 const TIERS = [
   { name:'Bronze', icon:'🥉', color:'#b45309', bg:'rgba(180,83,9,.1)',  border:'rgba(180,83,9,.25)',  min:0,     max:4999,  rate:2, bonus:0    },
@@ -875,224 +953,90 @@ const TIERS = [
   { name:'Gold',   icon:'🥇', color:'#f59e0b', bg:'rgba(245,158,11,.1)', border:'rgba(245,158,11,.25)', min:15000,max:29999, rate:5, bonus:1000 },
   { name:'Diamond',icon:'💎', color:'#00e5ff', bg:'rgba(0,229,255,.08)', border:'rgba(0,229,255,.22)', min:30000,max:Infinity,rate:8,bonus:2000 },
 ];
-
 function getTier(monthlySales) {
-  for(let i=TIERS.length-1;i>=0;i--) {
-    if(monthlySales >= TIERS[i].min) return TIERS[i];
-  }
+  for(let i=TIERS.length-1;i>=0;i--) if(monthlySales>=TIERS[i].min) return TIERS[i];
   return TIERS[0];
 }
-
 function getNextTier(monthlySales) {
-  const t = getTier(monthlySales);
-  const idx = TIERS.indexOf(t);
-  return idx < TIERS.length-1 ? TIERS[idx+1] : null;
+  const t=getTier(monthlySales); const idx=TIERS.indexOf(t);
+  return idx<TIERS.length-1?TIERS[idx+1]:null;
 }
-
-// คำนวณยอดขายในเดือนปัจจุบันของ user คนนั้น
 function getMonthlySales(userId) {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-  const u = DB.users.find(u=>u.id===userId);
-  if(!u) return 0;
-  return DB.orders
-    .filter(o=> o.refCode===u.refCode && o.ts>=startOfMonth)
-    .reduce((s,o)=>s+o.amt, 0);
+  const now=new Date();
+  const startOfMonth=new Date(now.getFullYear(),now.getMonth(),1).getTime();
+  const u=DB.users.find(u=>u.id===userId); if(!u)return 0;
+  return DB.orders.filter(o=>o.refCode===u.refCode&&o.ts>=startOfMonth).reduce((s,o)=>s+o.amt,0);
 }
-
-// อัตราค่าคอมที่ใช้จริง (tier หรือ custom)
 function getEffectiveRate(user) {
-  if(user.customRate != null) return user.customRate;
-  const monthly = getMonthlySales(user.id);
-  return getTier(monthly).rate;
+  if(user.customRate!=null)return user.customRate;
+  return getTier(getMonthlySales(user.id)).rate;
 }
-
-// badge HTML สำหรับ tier
-function tierBadge(monthlySales, small=false) {
-  const t = getTier(monthlySales);
-  const sz = small ? 'font-size:10px;padding:2px 7px' : 'font-size:12px;padding:3px 10px';
+function tierBadge(monthlySales,small=false) {
+  const t=getTier(monthlySales);
+  const sz=small?'font-size:10px;padding:2px 7px':'font-size:12px;padding:3px 10px';
   return `<span style="display:inline-flex;align-items:center;gap:4px;background:${t.bg};border:1px solid ${t.border};border-radius:100px;color:${t.color};font-weight:700;white-space:nowrap;${sz}">${t.icon} ${t.name}</span>`;
 }
-
-// progress bar ไปยัง tier ถัดไป
-function tierProgress(monthlySales) {
-  const t = getTier(monthlySales);
-  const next = getNextTier(monthlySales);
-  if(!next) return `<div style="font-size:11px;color:var(--accent);text-align:center;padding:4px 0">🏆 ระดับสูงสุดแล้ว!</div>`;
-  const pct = Math.min(100, ((monthlySales - t.min) / (next.min - t.min)) * 100);
-  const remain = next.min - monthlySales;
-  return `
-    <div style="margin-top:6px">
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px">
-        <span>${t.icon} ${t.name}</span>
-        <span style="color:var(--text)">อีก ฿${fmti(remain)} → ${next.icon} ${next.name} (${next.rate}%)</span>
-      </div>
-      <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${t.color},${next.color});border-radius:4px;transition:width .5s"></div>
-      </div>
-    </div>`;
-}
-function mkCode(){
-  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s=''; for(let i=0;i<5;i++) s+=c[Math.random()*c.length|0]; return s;
-}
-function uniqCode(){ let c,t=0; do{c=mkCode();t++;}while(DB.users.some(u=>u.refCode===c)&&t<200); return c; }
-
-function toast(msg, type='success'){
+function mkCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[Math.random()*c.length|0];return s;}
+function uniqCode(){let c,t=0;do{c=mkCode();t++;}while(DB.users.some(u=>u.refCode===c)&&t<200);return c;}
+function toast(msg,type='success'){
   const ic={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
-  const el=document.createElement('div');
-  el.className=`toast ${type}`;
+  const el=document.createElement('div');el.className=`toast ${type}`;
   el.innerHTML=`<span style="flex-shrink:0">${ic[type]}</span><span style="flex:1">${msg}</span>`;
   document.getElementById('toasts').appendChild(el);
-  setTimeout(()=>{ el.style.animation='tOut .25s ease forwards'; setTimeout(()=>el.remove(),260); },3500);
+  setTimeout(()=>{el.style.animation='tOut .25s ease forwards';setTimeout(()=>el.remove(),260);},3500);
 }
-function addLog(msg,c='green'){ DB.log.unshift({msg,c,ts:Date.now()}); if(DB.log.length>60)DB.log.pop(); }
+function addLog(msg,c='green'){DB.log.unshift({msg,c,ts:Date.now()});if(DB.log.length>60)DB.log.pop();}
 
 // ════════════════════════════════════════════
 // PIN LOCK SYSTEM
 // ════════════════════════════════════════════
-const DEFAULT_PIN = '1234';
-let ADMIN_PIN     = DEFAULT_PIN;   // เปลี่ยนได้ผ่านหน้า Admin
-let adminUnlocked = false;         // สถานะปลดล็อกในเซสชั่นนี้
-let sessionExpiry = 0;             // timestamp หมดอายุ
-let sessionTimer  = null;
-const SESSION_MINUTES = 30;        // หมดเวลาอัตโนมัติ (นาที)
+const DEFAULT_PIN='1234';
+let ADMIN_PIN=DEFAULT_PIN;
+let adminUnlocked=false;
+let sessionExpiry=0;
+let sessionTimer=null;
+const SESSION_MINUTES=30;
+let pinBuffer='';
+let pinLocked=false;
 
-let pinBuffer = '';
-let pinLocked = false;  // ป้องกัน spam ตอน error
-
-function showPinOverlay() {
-  pinBuffer = '';
-  pinLocked = false;
-  updatePinDots();
-  document.getElementById('pin-err').textContent = '';
-  document.getElementById('pin-overlay').classList.add('show');
-  document.getElementById('pin-hint').style.display = ADMIN_PIN === DEFAULT_PIN ? '' : 'none';
+function showPinOverlay(){pinBuffer='';pinLocked=false;updatePinDots();document.getElementById('pin-err').textContent='';document.getElementById('pin-overlay').classList.add('show');document.getElementById('pin-hint').style.display=ADMIN_PIN===DEFAULT_PIN?'':'none';}
+function hidePinOverlay(){document.getElementById('pin-overlay').classList.remove('show');}
+function pinInput(digit){if(pinLocked||pinBuffer.length>=4)return;pinBuffer+=digit;updatePinDots();if(pinBuffer.length===4)setTimeout(checkPin,120);}
+function pinDel(){if(pinLocked)return;pinBuffer=pinBuffer.slice(0,-1);updatePinDots();document.getElementById('pin-err').textContent='';}
+function updatePinDots(state=''){for(let i=0;i<4;i++){const d=document.getElementById('pd'+i);d.className='pin-dot';if(state==='err')d.classList.add('err');else if(i<pinBuffer.length)d.classList.add('filled');}}
+function checkPin(){
+  if(pinBuffer===ADMIN_PIN){updatePinDots('ok');adminUnlocked=true;startSession();hidePinOverlay();showAdminPage();toast('🔓 ยินดีต้อนรับ Admin','success');}
+  else{pinLocked=true;updatePinDots('err');const msg=document.getElementById('pin-err');msg.textContent='❌ PIN ไม่ถูกต้อง กรุณาลองใหม่';document.getElementById('pin-card').classList.add('shake');setTimeout(()=>{document.getElementById('pin-card').classList.remove('shake');pinBuffer='';pinLocked=false;updatePinDots();msg.textContent='';},800);}
 }
-function hidePinOverlay() {
-  document.getElementById('pin-overlay').classList.remove('show');
-}
-
-function pinInput(digit) {
-  if (pinLocked || pinBuffer.length >= 4) return;
-  pinBuffer += digit;
-  updatePinDots();
-  if (pinBuffer.length === 4) {
-    setTimeout(checkPin, 120);  // เล็กน้อยให้ dot 4 แสดงก่อน
-  }
-}
-function pinDel() {
-  if (pinLocked) return;
-  pinBuffer = pinBuffer.slice(0, -1);
-  updatePinDots();
-  document.getElementById('pin-err').textContent = '';
-}
-
-function updatePinDots(state='') {
-  for (let i = 0; i < 4; i++) {
-    const d = document.getElementById('pd'+i);
-    d.className = 'pin-dot';
-    if (state === 'err') d.classList.add('err');
-    else if (i < pinBuffer.length) d.classList.add('filled');
-  }
-}
-
-function checkPin() {
-  if (pinBuffer === ADMIN_PIN) {
-    // ✅ ถูก
-    updatePinDots('ok');
-    adminUnlocked = true;
-    startSession();
-    hidePinOverlay();
-    showAdminPage();
-    toast('🔓 ยินดีต้อนรับ Admin', 'success');
-  } else {
-    // ❌ ผิด
-    pinLocked = true;
-    updatePinDots('err');
-    const msg = document.getElementById('pin-err');
-    msg.textContent = '❌ PIN ไม่ถูกต้อง กรุณาลองใหม่';
-    document.getElementById('pin-card').classList.add('shake');
-    setTimeout(() => {
-      document.getElementById('pin-card').classList.remove('shake');
-      pinBuffer = '';
-      pinLocked = false;
-      updatePinDots();
-      msg.textContent = '';
-    }, 800);
-  }
-}
-
-// keyboard support
-document.addEventListener('keydown', e => {
-  const overlay = document.getElementById('pin-overlay');
-  if (!overlay.classList.contains('show')) return;
-  if (e.key >= '0' && e.key <= '9') pinInput(e.key);
-  if (e.key === 'Backspace') pinDel();
-  if (e.key === 'Escape') { hidePinOverlay(); setMode('staff'); }
-});
-
-// ─── SESSION TIMER ─────────────────────────
-function startSession() {
-  sessionExpiry = Date.now() + SESSION_MINUTES * 60 * 1000;
-  if (sessionTimer) clearInterval(sessionTimer);
-  document.getElementById('session-badge').style.display = '';
-  document.getElementById('lock-icon').textContent = '🔓';
-  sessionTimer = setInterval(tickSession, 1000);
-  tickSession();
-}
-
-function tickSession() {
-  const remaining = sessionExpiry - Date.now();
-  if (remaining <= 0) { adminLock(); return; }
-  const m = Math.floor(remaining / 60000);
-  const s = Math.floor((remaining % 60000) / 1000);
-  document.getElementById('session-timer').textContent =
-    String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-}
-
-function adminLock() {
-  adminUnlocked = false;
-  if (sessionTimer) clearInterval(sessionTimer);
-  document.getElementById('session-badge').style.display = 'none';
-  document.getElementById('lock-icon').textContent = '🔒';
-  setMode('staff');
-  toast('🔒 ล็อก Admin แล้ว', 'info');
-}
-
-// ─── CHANGE PIN ─────────────────────────────
-function changePin() {
-  const old  = document.getElementById('pin-old').value.trim();
-  const nw   = document.getElementById('pin-new').value.trim();
-  const nw2  = document.getElementById('pin-new2').value.trim();
-  const msg  = document.getElementById('pin-change-msg');
-  if (old !== ADMIN_PIN)     { msg.innerHTML='<span style="color:var(--red)">❌ PIN ปัจจุบันไม่ถูกต้อง</span>'; return; }
-  if (!/^\d{4}$/.test(nw))  { msg.innerHTML='<span style="color:var(--red)">❌ PIN ต้องเป็นตัวเลข 4 หลัก</span>'; return; }
-  if (nw !== nw2)            { msg.innerHTML='<span style="color:var(--red)">❌ PIN ใหม่ไม่ตรงกัน</span>'; return; }
-  ADMIN_PIN = nw;
-  ['pin-old','pin-new','pin-new2'].forEach(id => document.getElementById(id).value='');
+document.addEventListener('keydown',e=>{const o=document.getElementById('pin-overlay');if(!o.classList.contains('show'))return;if(e.key>='0'&&e.key<='9')pinInput(e.key);if(e.key==='Backspace')pinDel();if(e.key==='Escape'){hidePinOverlay();setMode('staff');}});
+function startSession(){sessionExpiry=Date.now()+SESSION_MINUTES*60*1000;if(sessionTimer)clearInterval(sessionTimer);document.getElementById('session-badge').style.display='';document.getElementById('lock-icon').textContent='🔓';sessionTimer=setInterval(tickSession,1000);tickSession();}
+function tickSession(){const r=sessionExpiry-Date.now();if(r<=0){adminLock();return;}const m=Math.floor(r/60000);const s=Math.floor((r%60000)/1000);document.getElementById('session-timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+function adminLock(){adminUnlocked=false;if(sessionTimer)clearInterval(sessionTimer);document.getElementById('session-badge').style.display='none';document.getElementById('lock-icon').textContent='🔒';setMode('staff');toast('🔒 ล็อก Admin แล้ว','info');}
+function changePin(){
+  const old=document.getElementById('pin-old').value.trim();
+  const nw=document.getElementById('pin-new').value.trim();
+  const nw2=document.getElementById('pin-new2').value.trim();
+  const msg=document.getElementById('pin-change-msg');
+  if(old!==ADMIN_PIN){msg.innerHTML='<span style="color:var(--red)">❌ PIN ปัจจุบันไม่ถูกต้อง</span>';return;}
+  if(!/^\d{4}$/.test(nw)){msg.innerHTML='<span style="color:var(--red)">❌ PIN ต้องเป็นตัวเลข 4 หลัก</span>';return;}
+  if(nw!==nw2){msg.innerHTML='<span style="color:var(--red)">❌ PIN ใหม่ไม่ตรงกัน</span>';return;}
+  ADMIN_PIN=nw;['pin-old','pin-new','pin-new2'].forEach(id=>document.getElementById(id).value='');
   msg.innerHTML='<span style="color:var(--green)">✅ เปลี่ยน PIN สำเร็จ!</span>';
-  document.getElementById('pin-hint').style.display = 'none';
-  toast('🔐 เปลี่ยน PIN Admin สำเร็จ', 'success');
-  setTimeout(() => msg.innerHTML='', 3000);
+  document.getElementById('pin-hint').style.display='none';
+  toast('🔐 เปลี่ยน PIN Admin สำเร็จ','success');setTimeout(()=>msg.innerHTML='',3000);
 }
 
 // ════════════════════════════════════════════
-// MODE SWITCHER (with PIN guard)
+// MODE SWITCHER
 // ════════════════════════════════════════════
-function setMode(m) {
-  if (m === 'admin') {
-    if (!adminUnlocked) { showPinOverlay(); return; }
-    showAdminPage(); return;
-  }
-  // staff
+function setMode(m){
+  if(m==='admin'){if(!adminUnlocked){showPinOverlay();return;}showAdminPage();return;}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.getElementById('pg-staff').classList.add('on');
   document.getElementById('btn-staff').classList.add('on');
   document.getElementById('btn-admin').classList.remove('on');
 }
-
-function showAdminPage() {
+function showAdminPage(){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-admin').classList.add('on');
@@ -1100,8 +1044,6 @@ function showAdminPage() {
   document.getElementById('btn-staff').classList.remove('on');
   renderAdmin();
 }
-
-// ─── ADMIN TABS ────────────────────────────
 function aTab(t){
   document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
@@ -1116,164 +1058,99 @@ async function setRate(v){
   document.getElementById('a-rs').value=v;
   document.getElementById('a-rb').innerHTML=v+'<span>%</span>';
   updateStaffPreview();
-  try { await apiPost({action:'setRate', rate:v}); }
-  catch(e){ toast('บันทึก rate ไม่สำเร็จ','error'); }
+  try{await apiPost({action:'setRate',rate:v});}catch(e){toast('บันทึก rate ไม่สำเร็จ','error');}
 }
 
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════
 // STAFF FUNCTIONS
-// ══════════════════════════════════════════
-let staffRef = null;
-let staffSession = [];
+// ════════════════════════════════════════════
+let staffRef=null;
+let staffSession=[];
 
 function onRefInput(){
-  const code = document.getElementById('s-ref').value.trim();
-  const inp  = document.getElementById('s-ref');
-  const stat = document.getElementById('s-ref-status');
-
-  if(!code){
-    staffRef=null; inp.className='ref-input';
-    stat.className='ref-status empty';
-    stat.innerHTML='<span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>';
-    document.getElementById('s-copy-link').style.display='none';
-    updateStaffPreview(); return;
-  }
-  if(code.length<5){
-    staffRef=null; inp.className='ref-input';
-    stat.className='ref-status typing';
-    stat.innerHTML=`<span style="color:var(--muted);font-size:12px">กรอกให้ครบ (${code.length}/5)...</span>`;
-    document.getElementById('s-copy-link').style.display='none';
-    updateStaffPreview(); return;
-  }
-
-  const found = DB.users.find(u=>u.refCode===code);
-  staffRef = found||null;
-
-  const copyBtn = document.getElementById('s-copy-link');
+  const code=document.getElementById('s-ref').value.trim();
+  const inp=document.getElementById('s-ref');
+  const stat=document.getElementById('s-ref-status');
+  if(!code){staffRef=null;inp.className='ref-input';stat.className='ref-status empty';stat.innerHTML='<span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>';document.getElementById('s-copy-link').style.display='none';updateStaffPreview();return;}
+  if(code.length<5){staffRef=null;inp.className='ref-input';stat.className='ref-status typing';stat.innerHTML=`<span style="color:var(--muted);font-size:12px">กรอกให้ครบ (${code.length}/5)...</span>`;document.getElementById('s-copy-link').style.display='none';updateStaffPreview();return;}
+  const found=DB.users.find(u=>u.refCode===code);
+  staffRef=found||null;
+  const copyBtn=document.getElementById('s-copy-link');
   if(found){
-    inp.className='ref-input valid';
-    stat.className='ref-status found';
-    stat.innerHTML=`
-      <div class="ref-avatar">${found.name.charAt(0)}</div>
-      <div>
-        <div style="font-weight:700;font-size:14px">${found.name}</div>
-        <div style="font-size:11px;color:var(--muted)">แนะนำไป ${found.orderCount||0} ออเดอร์ · สะสม ฿${fmt(found.totalComm||0)}</div>
-      </div>`;
+    inp.className='ref-input valid';stat.className='ref-status found';
+    stat.innerHTML=`<div class="ref-avatar">${found.name.charAt(0)}</div><div><div style="font-weight:700;font-size:14px">${found.name}</div><div style="font-size:11px;color:var(--muted)">แนะนำไป ${found.orderCount||0} ออเดอร์ · สะสม ฿${fmt(found.totalComm||0)}</div></div>`;
     copyBtn.style.display='block';
-  } else {
-    inp.className='ref-input invalid';
-    stat.className='ref-status notfound';
+  }else{
+    inp.className='ref-input invalid';stat.className='ref-status notfound';
     stat.innerHTML=`<span style="font-size:16px">❌</span><span style="color:var(--red);font-size:13px;font-weight:600">ไม่พบรหัสนี้ในระบบ</span>`;
     copyBtn.style.display='none';
   }
   updateStaffPreview();
 }
 
-function onAmtInput(){
-  document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));
-  updateStaffPreview();
-}
-function setAmt(v,el){
-  document.getElementById('s-amt').value=v;
-  document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));
-  el.classList.add('on');
-  updateStaffPreview();
-}
+function onAmtInput(){document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));updateStaffPreview();}
+function setAmt(v,el){document.getElementById('s-amt').value=v;document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));el.classList.add('on');updateStaffPreview();}
 
 function updateStaffPreview(){
   const amt=parseFloat(document.getElementById('s-amt').value)||0;
   document.getElementById('s-submit').disabled=!(amt>0);
   const prev=document.getElementById('s-comm');
-  if(amt>0 && staffRef){
-    const effRate = getEffectiveRate(staffRef);
-    const c=calcComm(amt, effRate);
-    const monthly = getMonthlySales(staffRef.id);
-    const t = getTier(monthly);
+  if(amt>0&&staffRef){
+    const effRate=getEffectiveRate(staffRef);
+    const c=calcComm(amt,effRate);
+    const monthly=getMonthlySales(staffRef.id);
+    const t=getTier(monthly);
     document.getElementById('s-comm-name').textContent=staffRef.name;
     document.getElementById('s-comm-amt').textContent='฿'+fmt(c);
     document.getElementById('s-comm-pct').textContent=effRate+'% '+t.icon+t.name+' · ฿'+fmti(amt);
     prev.classList.remove('hidden');
-  } else {
-    prev.classList.add('hidden');
-  }
+  }else{prev.classList.add('hidden');}
 }
 
 function staffSubmit(){
-  const amt  = parseFloat(document.getElementById('s-amt').value);
-  const code = document.getElementById('s-ref').value.trim();
-  const cust = document.getElementById('s-cust').value.trim();
-  if(!amt||amt<=0){ toast('กรุณากรอกยอดซื้อ','error'); return; }
-
-  // หา user จาก DB ล่าสุดเสมอ
-  let ref = staffRef ? DB.users.find(u=>u.id===staffRef.id) : null;
-  let commission=0, st='no_code';
-
-  if(code && !ref){
-    // มีรหัสแต่หาไม่เจอ
-    st='invalid';
-  } else if(ref){
-    const effRate = getEffectiveRate(ref);
-    commission=calcComm(amt, effRate);
-    ref.totalComm   =(ref.totalComm||0)  +commission;
-    ref.pendingComm =(ref.pendingComm||0)+commission;
-    ref.totalSales  =(ref.totalSales||0) +amt;
-    ref.orderCount  =(ref.orderCount||0) +1;
+  const amt=parseFloat(document.getElementById('s-amt').value);
+  const code=document.getElementById('s-ref').value.trim();
+  const cust=document.getElementById('s-cust').value.trim();
+  if(!amt||amt<=0){toast('กรุณากรอกยอดซื้อ','error');return;}
+  let ref=staffRef?DB.users.find(u=>u.id===staffRef.id):null;
+  let commission=0,st='no_code';
+  if(code&&!ref){st='invalid';}
+  else if(ref){
+    const effRate=getEffectiveRate(ref);
+    commission=calcComm(amt,effRate);
+    ref.totalComm=(ref.totalComm||0)+commission;
+    ref.pendingComm=(ref.pendingComm||0)+commission;
+    ref.totalSales=(ref.totalSales||0)+amt;
+    ref.orderCount=(ref.orderCount||0)+1;
     st='valid';
   }
-
-  const order={
-    id:DB.orders.length+1, ts:Date.now(),
-    amt, customerName:cust,
-    refCode:code||'', refName:ref?ref.name:'',
-    commission, rate:ref?getEffectiveRate(ref):DB.rate, st
-  };
-  DB.orders.push(order);
-  staffSession.unshift(order);
-
-  if(st==='valid'){
-    addLog(`💰 <b>${ref.name}</b> ได้รับ <b style="color:var(--green)">฿${fmt(commission)}</b> จากออเดอร์ ฿${fmt(amt)}`,'green');
-    toast(`${ref.name} ได้ค่าคอม ฿${fmt(commission)}`);
-  } else {
-    addLog(`🛒 บันทึกออเดอร์ ฿${fmt(amt)} ${code?'(รหัสผิด)':'(ไม่มีรหัส)'}`,'gray');
-  }
-
-  // บันทึกลง Sheets (background — ไม่บล็อก UI)
-  apiPost({action:'addOrder', order}).catch(e=> toast('⚠️ บันทึก Sheets ไม่สำเร็จ: '+e.message,'error'));
-
-  showSuccess(order, ref);
+  const order={id:DB.orders.length+1,ts:Date.now(),amt,customerName:cust,refCode:code||'',refName:ref?ref.name:'',commission,rate:ref?getEffectiveRate(ref):DB.rate,st};
+  DB.orders.push(order);staffSession.unshift(order);
+  if(st==='valid'){addLog(`💰 <b>${ref.name}</b> ได้รับ <b style="color:var(--green)">฿${fmt(commission)}</b> จากออเดอร์ ฿${fmt(amt)}`,'green');toast(`${ref.name} ได้ค่าคอม ฿${fmt(commission)}`);}
+  else{addLog(`🛒 บันทึกออเดอร์ ฿${fmt(amt)} ${code?'(รหัสผิด)':'(ไม่มีรหัส)'}`,'gray');}
+  apiPost({action:'addOrder',order}).catch(e=>toast('⚠️ บันทึก Sheets ไม่สำเร็จ: '+e.message,'error'));
+  showSuccess(order,ref);
 }
 
-function showSuccess(order, ref){
+function showSuccess(order,ref){
   const rows=[{l:'ยอดซื้อ',v:'฿'+fmt(order.amt),hl:false}];
-  if(order.customerName) rows.unshift({l:'ลูกค้า',v:order.customerName,hl:false});
-  if(ref){
-    rows.push({l:'รหัสผู้แนะนำ',v:order.refCode,hl:false});
-    rows.push({l:`ค่าคอม ${order.rate}% → ${ref.name}`,v:'+฿'+fmt(order.commission),hl:true});
-  }
-  document.getElementById('sov-rcpt').innerHTML=rows.map(r=>`
-    <div class="rrow ${r.hl?'hl':''}"><span class="rl">${r.l}</span><span class="rv">${r.v}</span></div>`).join('');
-  document.getElementById('sov-sub').textContent=ref
-    ?`ค่าคอม ฿${fmt(order.commission)} ทบยอดให้ ${ref.name} แล้ว`
-    :'บันทึกออเดอร์เรียบร้อย';
-  document.getElementById('sov-copy-link').style.display = ref ? 'block' : 'none';
-  document.getElementById('sov').classList.add('show');
-  renderRecent();
+  if(order.customerName)rows.unshift({l:'ลูกค้า',v:order.customerName,hl:false});
+  if(ref){rows.push({l:'รหัสผู้แนะนำ',v:order.refCode,hl:false});rows.push({l:`ค่าคอม ${order.rate}% → ${ref.name}`,v:'+฿'+fmt(order.commission),hl:true});}
+  document.getElementById('sov-rcpt').innerHTML=rows.map(r=>`<div class="rrow ${r.hl?'hl':''}"><span class="rl">${r.l}</span><span class="rv">${r.v}</span></div>`).join('');
+  document.getElementById('sov-sub').textContent=ref?`ค่าคอม ฿${fmt(order.commission)} ทบยอดให้ ${ref.name} แล้ว`:'บันทึกออเดอร์เรียบร้อย';
+  document.getElementById('sov-copy-link').style.display=ref?'block':'none';
+  document.getElementById('sov').classList.add('show');renderRecent();
 }
 
-function staffCopyLink() {
-  if (!staffRef) return;
-  const base = window.location.origin + window.location.pathname;
-  const url  = base + '?uid=' + staffRef.id;
-  navigator.clipboard.writeText(url)
-    .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + staffRef.name + ' ได้เลย','success'))
-    .catch(()=> { prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url); });
+function staffCopyLink(){
+  if(!staffRef)return;
+  const url=window.location.origin+window.location.pathname+'?uid='+staffRef.id;
+  navigator.clipboard.writeText(url).then(()=>toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ '+staffRef.name+' ได้เลย','success')).catch(()=>{prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:',url);});
 }
 
 function staffReset(){
   document.getElementById('sov').classList.remove('show');
-  document.getElementById('s-cust').value='';
-  document.getElementById('s-ref').value='';
-  document.getElementById('s-amt').value='';
+  ['s-cust','s-ref','s-amt'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('s-ref').className='ref-input';
   document.getElementById('s-ref-status').className='ref-status empty';
   document.getElementById('s-ref-status').innerHTML='<span style="color:var(--muted);font-size:12px">พิมพ์รหัสเพื่อตรวจสอบ</span>';
@@ -1281,8 +1158,7 @@ function staffReset(){
   document.getElementById('s-submit').disabled=true;
   document.querySelectorAll('.qa').forEach(q=>q.classList.remove('on'));
   document.getElementById('s-copy-link').style.display='none';
-  staffRef=null;
-  document.getElementById('s-ref').focus();
+  staffRef=null;document.getElementById('s-ref').focus();
 }
 
 function renderRecent(){
@@ -1291,58 +1167,42 @@ function renderRecent(){
   wrap.style.display='block';
   document.getElementById('s-recent-list').innerHTML=staffSession.slice(0,5).map(o=>{
     const t=new Date(o.ts).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-    return `<div class="ritem">
-      <div class="rdot" style="background:${o.commission>0?'var(--green)':'var(--muted)'}"></div>
-      <div class="rinfo">
-        <div class="rprod">${o.customerName?`<b>${o.customerName}</b> · `:''} ฿${fmt(o.amt)} ${o.refCode?'· '+o.refCode:'· ไม่มีรหัส'}</div>
-        <div class="rmeta">${t}${o.refName?' · → '+o.refName:''}</div>
-      </div>
-      ${o.commission>0?`<div class="rcomm">+฿${fmt(o.commission)}</div>`:''}
-    </div>`;
+    return `<div class="ritem"><div class="rdot" style="background:${o.commission>0?'var(--green)':'var(--muted)'}"></div><div class="rinfo"><div class="rprod">${o.customerName?`<b>${o.customerName}</b> · `:''} ฿${fmt(o.amt)} ${o.refCode?'· '+o.refCode:'· ไม่มีรหัส'}</div><div class="rmeta">${t}${o.refName?' · → '+o.refName:''}</div></div>${o.commission>0?`<div class="rcomm">+฿${fmt(o.commission)}</div>`:''}</div>`;
   }).join('');
 }
 
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════
 // ADMIN FUNCTIONS
-// ══════════════════════════════════════════
+// ════════════════════════════════════════════
 async function addUser(){
-  const name =document.getElementById('a-un').value.trim();
+  const name=document.getElementById('a-un').value.trim();
   const email=document.getElementById('a-ue').value.trim().toLowerCase();
-  const bank =document.getElementById('a-ub').value.trim();
+  const bank=document.getElementById('a-ub').value.trim();
   const rateRaw=document.getElementById('a-ur').value.trim();
   if(!name||!email){toast('กรุณากรอกชื่อและอีเมล','error');return;}
   if(!email.includes('@')){toast('อีเมลไม่ถูกต้อง','error');return;}
   if(DB.users.some(u=>u.email===email)){toast('อีเมลนี้มีอยู่แล้ว','error');return;}
-  const customRate = rateRaw ? parseFloat(rateRaw) : null;
-  if(customRate!==null && (isNaN(customRate)||customRate<0.5||customRate>50)){
-    toast('% ค่าคอมต้องอยู่ระหว่าง 0.5 - 50','error'); return;
-  }
+  const customRate=rateRaw?parseFloat(rateRaw):null;
+  if(customRate!==null&&(isNaN(customRate)||customRate<0.5||customRate>50)){toast('% ค่าคอมต้องอยู่ระหว่าง 0.5 - 50','error');return;}
   const id='U'+String(DB.users.length+1).padStart(3,'0');
   const refCode=uniqCode();
   const newUser={id,name,email,bank,refCode,customRate,totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()};
   showLoading(true);
-  try {
-    await apiPost({action:'addUser', user:newUser});
+  try{
+    await apiPost({action:'addUser',user:newUser});
     DB.users.push(newUser);
-    document.getElementById('a-un').value='';
-    document.getElementById('a-ue').value='';
-    document.getElementById('a-ub').value='';
-    document.getElementById('a-ur').value='';
-    toast(`เพิ่ม ${name} สำเร็จ — รหัส: ${refCode}`);
-    renderAdmin();
-  } catch(e){ toast('เพิ่มสมาชิกไม่สำเร็จ: '+e.message,'error'); }
-  finally{ showLoading(false); }
+    ['a-un','a-ue','a-ub','a-ur'].forEach(id=>document.getElementById(id).value='');
+    toast(`เพิ่ม ${name} สำเร็จ — รหัส: ${refCode}`);renderAdmin();
+  }catch(e){toast('เพิ่มสมาชิกไม่สำเร็จ: '+e.message,'error');}
+  finally{showLoading(false);}
 }
 
 async function delUser(id){
   if(!confirm('ลบสมาชิกนี้?'))return;
   showLoading(true);
-  try {
-    await apiPost({action:'deleteUser', id});
-    DB.users=DB.users.filter(u=>u.id!==id);
-    renderAdmin(); toast('ลบสมาชิกแล้ว','warning');
-  } catch(e){ toast('ลบไม่สำเร็จ: '+e.message,'error'); }
-  finally{ showLoading(false); }
+  try{await apiPost({action:'deleteUser',id});DB.users=DB.users.filter(u=>u.id!==id);renderAdmin();toast('ลบสมาชิกแล้ว','warning');}
+  catch(e){toast('ลบไม่สำเร็จ: '+e.message,'error');}
+  finally{showLoading(false);}
 }
 
 async function payout(uid){
@@ -1350,23 +1210,18 @@ async function payout(uid){
   if(!u||!(u.pendingComm>0)){toast('ไม่มียอดรอจ่าย','warning');return;}
   if(!confirm(`จ่าย ฿${fmt(u.pendingComm)} ให้ ${u.name}?`))return;
   showLoading(true);
-  try {
-    await apiPost({action:'payout', uid});
-    const a = u.pendingComm;
-    u.paidComm=(u.paidComm||0)+a; u.pendingComm=0;
+  try{
+    await apiPost({action:'payout',uid});
+    const a=u.pendingComm;u.paidComm=(u.paidComm||0)+a;u.pendingComm=0;
     DB.payouts.push({ts:Date.now(),uid,name:u.name,a});
-    toast(`จ่ายให้ ${u.name} แล้ว`);
-    renderAdmin();
-  } catch(e){ toast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
-  finally{ showLoading(false); }
+    toast(`จ่ายให้ ${u.name} แล้ว`);renderAdmin();
+  }catch(e){toast('บันทึกไม่สำเร็จ: '+e.message,'error');}
+  finally{showLoading(false);}
 }
 
-function copyCode(c){ navigator.clipboard.writeText(c).then(()=>toast(`คัดลอก ${c}`,'info')).catch(()=>{}); }
+function copyCode(c){navigator.clipboard.writeText(c).then(()=>toast(`คัดลอก ${c}`,'info')).catch(()=>{});}
 
-// ── RENDER ADMIN ────────────────────────
-function renderAdmin(){
-  rStats(); rUsers(); rOrders(); rComm(); rBoard(); rLog(); rPlog();
-}
+function renderAdmin(){rStats();rUsers();rOrders();rComm();rBoard();rLog();rPlog();}
 
 function rStats(){
   const gmv=DB.orders.reduce((s,o)=>s+o.amt,0);
@@ -1383,12 +1238,10 @@ function rUsers(){
   const tb=document.getElementById('a-tb-u');
   if(!DB.users.length){tb.innerHTML='<tr><td colspan="13"><div class="emp"><div class="ic">👤</div>ยังไม่มีสมาชิก</div></td></tr>';return;}
   tb.innerHTML=DB.users.map(u=>{
-    const monthly = getMonthlySales(u.id);
-    const tier = getTier(monthly);
-    const effRate = getEffectiveRate(u);
-    const isCustom = u.customRate!=null;
-    return `
-    <tr>
+    const monthly=getMonthlySales(u.id);
+    const tier=getTier(monthly);
+    const isCustom=u.customRate!=null;
+    return `<tr>
       <td><span class="mn cm" style="font-size:11px">${u.id}</span></td>
       <td><b>${u.name}</b><br><span style="font-size:11px;color:var(--muted)">${u.email}</span></td>
       <td><span class="ctag" onclick="copyCode('${u.refCode}')">📋 ${u.refCode}</span></td>
@@ -1397,20 +1250,15 @@ function rUsers(){
         <div style="display:flex;align-items:center;gap:4px">
           <input type="number" value="${isCustom?u.customRate:''}" min="0.5" max="50" step="0.5"
             placeholder="${tier.rate}"
-            style="width:56px;background:var(--s2);border:1px solid var(--border);border-radius:6px;
-                   padding:3px 6px;font-family:var(--mono);font-size:12px;font-weight:700;
-                   color:${isCustom?'var(--accent)':'var(--muted)'};outline:none;text-align:center;"
-            onchange="setUserRate('${u.id}',+this.value)"
-            title="${isCustom?'อัตราเฉพาะบุคคล':'ใช้อัตราตาม tier: '+tier.rate+'%'}">
+            style="width:56px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;font-family:var(--mono);font-size:12px;font-weight:700;color:${isCustom?'var(--accent)':'var(--muted)'};outline:none;text-align:center;"
+            onchange="setUserRate('${u.id}',+this.value)">
           <span style="font-size:10px;color:var(--muted)">%</span>
-          ${isCustom?`<span class="badge bb" style="font-size:9px;padding:1px 5px">custom</span>`
-                    :`<span style="font-size:9px;color:var(--subtle)">${tier.rate}% tier</span>`}
+          ${isCustom?`<span class="badge bb" style="font-size:9px;padding:1px 5px">custom</span>`:`<span style="font-size:9px;color:var(--subtle)">${tier.rate}% tier</span>`}
         </div>
       </td>
       <td>
         <input type="text" value="${u.bank||''}" placeholder="เลขบัญชี"
-          style="width:130px;background:var(--s2);border:1px solid var(--border);border-radius:6px;
-                 padding:3px 8px;font-family:var(--mono);font-size:11px;color:var(--text);outline:none;"
+          style="width:130px;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:var(--mono);font-size:11px;color:var(--text);outline:none;"
           onchange="setUserBank('${u.id}',this.value)">
       </td>
       <td><span class="badge bx">${u.orderCount||0}</span></td>
@@ -1424,29 +1272,17 @@ function rUsers(){
   }).join('');
 }
 
-async function setUserBank(uid, bank){
-  const u = DB.users.find(u=>u.id===uid);
-  if(!u) return;
-  u.bank = bank.trim();
-  try { await apiPost({action:'updateUser', user:{id:uid, bank:u.bank}}); toast(`บันทึกเลขบัญชี ${u.name} แล้ว`,'info'); }
-  catch(e){ toast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
+async function setUserBank(uid,bank){
+  const u=DB.users.find(u=>u.id===uid);if(!u)return;u.bank=bank.trim();
+  try{await apiPost({action:'updateUser',user:{id:uid,bank:u.bank}});toast(`บันทึกเลขบัญชี ${u.name} แล้ว`,'info');}
+  catch(e){toast('บันทึกไม่สำเร็จ: '+e.message,'error');}
 }
-
-async function setUserRate(uid, rate){
-  const u = DB.users.find(u=>u.id===uid);
-  if(!u) return;
-  if(isNaN(rate)||rate<0.5||rate>50){ toast('% ต้องอยู่ระหว่าง 0.5–50','error'); rUsers(); return; }
-  u.customRate = rate;
-  try { await apiPost({action:'updateUser', user:{id:uid, customRate:rate}}); toast(`${u.name} ได้รับ ${rate}% แล้ว`,'info'); }
-  catch(e){ toast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
-  rUsers();
-}
-
-function resetUserRate(uid){
-  const u = DB.users.find(u=>u.id===uid);
-  if(!u) return;
-  u.customRate = null;
-  toast(`${u.name} ใช้อัตรากลาง ${DB.rate}% แล้ว`,'info');
+async function setUserRate(uid,rate){
+  const u=DB.users.find(u=>u.id===uid);if(!u)return;
+  if(isNaN(rate)||rate<0.5||rate>50){toast('% ต้องอยู่ระหว่าง 0.5–50','error');rUsers();return;}
+  u.customRate=rate;
+  try{await apiPost({action:'updateUser',user:{id:uid,customRate:rate}});toast(`${u.name} ได้รับ ${rate}% แล้ว`,'info');}
+  catch(e){toast('บันทึกไม่สำเร็จ: '+e.message,'error');}
   rUsers();
 }
 
@@ -1476,21 +1312,13 @@ function rComm(){
     <tr>
       <td><b>${u.name}</b><br><span style="font-size:11px;color:var(--muted)">${u.email}</span></td>
       <td><span class="ctag nc">${u.refCode}</span></td>
-      <td>
-        ${u.bank
-          ? `<span class="mn" style="font-size:12px;color:var(--text)">${u.bank}</span>
-             <button onclick="navigator.clipboard.writeText('${u.bank}').then(()=>toast('คัดลอกเลขบัญชีแล้ว','info'))"
-               style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:0 4px" title="คัดลอก">📋</button>`
-          : `<span style="color:var(--subtle);font-size:11px">ไม่มีข้อมูล</span>`}
-      </td>
+      <td>${u.bank?`<span class="mn" style="font-size:12px;color:var(--text)">${u.bank}</span><button onclick="navigator.clipboard.writeText('${u.bank}').then(()=>toast('คัดลอกเลขบัญชีแล้ว','info'))" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);padding:0 4px">📋</button>`:`<span style="color:var(--subtle);font-size:11px">ไม่มีข้อมูล</span>`}</td>
       <td><span class="badge bb">${u.orderCount||0}</span></td>
       <td class="mn">฿${fmt(u.totalSales||0)}</td>
       <td class="mn co" style="font-size:15px">฿${fmt(u.totalComm||0)}</td>
       <td class="mn" style="color:${(u.pendingComm||0)>0?'var(--gold)':'var(--muted)'};font-size:15px">฿${fmt(u.pendingComm||0)}</td>
       <td class="mn cg">฿${fmt(u.paidComm||0)}</td>
-      <td>${(u.pendingComm||0)>0
-        ?`<button class="btn btn-pay" onclick="payout('${u.id}')">💳 จ่าย ฿${fmt(u.pendingComm)}</button>`
-        :`<span class="badge bg">จ่ายครบ</span>`}</td>
+      <td>${(u.pendingComm||0)>0?`<button class="btn btn-pay" onclick="payout('${u.id}')">💳 จ่าย ฿${fmt(u.pendingComm)}</button>`:`<span class="badge bg">จ่ายครบ</span>`}</td>
     </tr>`).join('');
 }
 
@@ -1498,19 +1326,12 @@ function rBoard(){
   const el=document.getElementById('a-lb');
   const list=[...DB.users].filter(u=>(u.totalComm||0)>0).sort((a,b)=>b.totalComm-a.totalComm);
   if(!list.length){el.innerHTML='<div class="emp"><div class="ic">🏆</div>ยังไม่มีข้อมูล</div>';return;}
-  const medals=['🥇','🥈','🥉'];
-  const cols=['var(--gold)','#94a3b8','#b45309'];
+  const medals=['🥇','🥈','🥉'];const cols=['var(--gold)','#94a3b8','#b45309'];
   el.innerHTML=list.slice(0,10).map((u,i)=>`
     <div class="lbi">
       <div class="lbr" style="color:${cols[i]||'var(--muted)'}">${medals[i]||i+1}</div>
-      <div style="flex:1">
-        <div style="font-weight:700;font-size:14px">${u.name}</div>
-        <div style="font-size:11px;color:var(--muted)">${u.refCode} · ${u.orderCount||0} ออเดอร์</div>
-      </div>
-      <div style="text-align:right">
-        <div class="mn co" style="font-size:20px">฿${fmt(u.totalComm||0)}</div>
-        ${(u.pendingComm||0)>0?`<div style="font-size:11px;color:var(--gold)">฿${fmt(u.pendingComm)} รอรับ</div>`:''}
-      </div>
+      <div style="flex:1"><div style="font-weight:700;font-size:14px">${u.name}</div><div style="font-size:11px;color:var(--muted)">${u.refCode} · ${u.orderCount||0} ออเดอร์</div></div>
+      <div style="text-align:right"><div class="mn co" style="font-size:20px">฿${fmt(u.totalComm||0)}</div>${(u.pendingComm||0)>0?`<div style="font-size:11px;color:var(--gold)">฿${fmt(u.pendingComm)} รอรับ</div>`:''}</div>
     </div>`).join('');
 }
 
@@ -1518,105 +1339,65 @@ function rLog(){
   const el=document.getElementById('a-log');
   const cm={green:'var(--green)',red:'var(--red)',yellow:'var(--gold)',gray:'var(--muted)'};
   if(!DB.log.length){el.innerHTML='<div class="emp" style="padding:20px"><div class="ic">📈</div>ยังไม่มีกิจกรรม</div>';return;}
-  el.innerHTML=DB.log.slice(0,15).map(l=>`
-    <div class="li"><div class="ld" style="background:${cm[l.c]}"></div><div style="font-size:12px;flex:1;line-height:1.5">${l.msg}</div><div class="lt">${ft(l.ts)}</div></div>`).join('');
+  el.innerHTML=DB.log.slice(0,15).map(l=>`<div class="li"><div class="ld" style="background:${cm[l.c]}"></div><div style="font-size:12px;flex:1;line-height:1.5">${l.msg}</div><div class="lt">${ft(l.ts)}</div></div>`).join('');
 }
 
 function rPlog(){
   const el=document.getElementById('a-plog');
   if(!DB.payouts.length){el.innerHTML='<div class="emp"><div class="ic">🧾</div>ยังไม่มีการจ่ายเงิน</div>';return;}
-  el.innerHTML=[...DB.payouts].reverse().map(p=>`
-    <div class="li"><div class="ld" style="background:var(--green)"></div><div style="font-size:13px;flex:1">จ่าย <b class="mn cg">฿${fmt(p.a)}</b> ให้ <b>${p.name}</b></div><div class="lt">${ft(p.ts)}</div></div>`).join('');
+  el.innerHTML=[...DB.payouts].reverse().map(p=>`<div class="li"><div class="ld" style="background:var(--green)"></div><div style="font-size:13px;flex:1">จ่าย <b class="mn cg">฿${fmt(p.a)}</b> ให้ <b>${p.name}</b></div><div class="lt">${ft(p.ts)}</div></div>`).join('');
 }
 
-// ── DEMO DATA ──────────────────────────
 function loadDemo(){
   DB={users:[],orders:[],payouts:[],log:[],rate:DB.rate};
-  const du=[
-    {n:'สมชาย ใจดี',   e:'somchai@demo.com',  r:3},
-    {n:'สมหญิง มีสุข', e:'somying@demo.com',  r:null},
-    {n:'มานี รักเรียน',e:'manee@demo.com',    r:5},
-    {n:'วิชัย ขยันดี', e:'wichai@demo.com',   r:null},
-  ];
-  du.forEach(u=>{
-    const id='U'+String(DB.users.length+1).padStart(3,'0');
-    DB.users.push({id,name:u.n,email:u.e,refCode:uniqCode(),customRate:u.r,totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()});
-  });
-  // demo orders
-  const do_=[
-    {amt:1500,ri:0},{amt:2200,ri:0},{amt:1290,ri:1},
-    {amt:3500,ri:0},{amt:890,ri:2},{amt:4800,ri:1},{amt:1500,ri:null},
-  ];
-  do_.forEach((o,i)=>{
-    const ref=o.ri!==null?DB.users[o.ri]:null;
-    const effRate = ref ? (ref.customRate??DB.rate) : DB.rate;
-    const c=ref?calcComm(o.amt, effRate):0;
-    if(ref){ref.totalComm+=c;ref.pendingComm+=c;ref.totalSales+=o.amt;ref.orderCount+=1;}
-    DB.orders.push({id:i+1,ts:Date.now()-(do_.length-i)*3600000,amt:o.amt,
-      refCode:ref?ref.refCode:'',refName:ref?ref.name:'',
-      commission:c,rate:effRate,st:ref?'valid':'no_code'});
-  });
-  // pre-payout
-  const u0=DB.users[0];
-  const pp=calcComm(1500);
-  u0.paidComm+=pp;u0.pendingComm-=pp;
+  const du=[{n:'สมชาย ใจดี',e:'somchai@demo.com',r:3},{n:'สมหญิง มีสุข',e:'somying@demo.com',r:null},{n:'มานี รักเรียน',e:'manee@demo.com',r:5},{n:'วิชัย ขยันดี',e:'wichai@demo.com',r:null}];
+  du.forEach(u=>{const id='U'+String(DB.users.length+1).padStart(3,'0');DB.users.push({id,name:u.n,email:u.e,refCode:uniqCode(),customRate:u.r,totalComm:0,pendingComm:0,paidComm:0,totalSales:0,orderCount:0,ts:Date.now()});});
+  const do_=[{amt:1500,ri:0},{amt:2200,ri:0},{amt:1290,ri:1},{amt:3500,ri:0},{amt:890,ri:2},{amt:4800,ri:1},{amt:1500,ri:null}];
+  do_.forEach((o,i)=>{const ref=o.ri!==null?DB.users[o.ri]:null;const effRate=ref?(ref.customRate??DB.rate):DB.rate;const c=ref?calcComm(o.amt,effRate):0;if(ref){ref.totalComm+=c;ref.pendingComm+=c;ref.totalSales+=o.amt;ref.orderCount+=1;}DB.orders.push({id:i+1,ts:Date.now()-(do_.length-i)*3600000,amt:o.amt,customerName:'',refCode:ref?ref.refCode:'',refName:ref?ref.name:'',commission:c,rate:effRate,st:ref?'valid':'no_code'});});
+  const u0=DB.users[0];const pp=calcComm(1500);u0.paidComm+=pp;u0.pendingComm-=pp;
   DB.payouts.push({ts:Date.now()-7200000,uid:u0.id,name:u0.name,a:pp});
   addLog(`⚡ โหลดตัวอย่าง ${du.length} สมาชิก + ${do_.length} ออเดอร์`,'green');
-  toast('โหลดข้อมูลตัวอย่างสำเร็จ!','info');
-  renderAdmin();
+  toast('โหลดข้อมูลตัวอย่างสำเร็จ!','info');renderAdmin();
 }
 
 async function clearAll(){
   if(!confirm('ล้างข้อมูลทั้งหมด? (ลบทั้งใน Sheets ด้วย)'))return;
   showLoading(true);
-  try {
-    await apiPost({action:'clearAll'});
-    DB={users:[],orders:[],payouts:[],log:[],rate:DB.rate};
-    renderAdmin(); toast('ล้างข้อมูลแล้ว','warning');
-  } catch(e){ toast('ล้างไม่สำเร็จ: '+e.message,'error'); }
-  finally{ showLoading(false); }
+  try{await apiPost({action:'clearAll'});DB={users:[],orders:[],payouts:[],log:[],rate:DB.rate};renderAdmin();toast('ล้างข้อมูลแล้ว','warning');}
+  catch(e){toast('ล้างไม่สำเร็จ: '+e.message,'error');}
+  finally{showLoading(false);}
 }
 
 // ════════════════════════════════════════════
-// MEMBER PORTAL — Real-time from Sheets
+// MEMBER PORTAL — Cache-first + Skeleton
 // ════════════════════════════════════════════
-
-// --- copy link (ใช้แค่ uid) ---
-function copyMemberLink(userId) {
-  const u = DB.users.find(u=>u.id===userId);
-  if (!u) { toast('ไม่พบสมาชิก','error'); return; }
-  const base = window.location.origin + window.location.pathname;
-  const url  = base + '?uid=' + userId;
-  navigator.clipboard.writeText(url)
-    .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + u.name + ' ได้เลย','success'))
-    .catch(()=> { prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url); });
+function copyMemberLink(userId){
+  const u=DB.users.find(u=>u.id===userId);if(!u){toast('ไม่พบสมาชิก','error');return;}
+  const url=window.location.origin+window.location.pathname+'?uid='+userId;
+  navigator.clipboard.writeText(url).then(()=>toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ '+u.name+' ได้เลย','success')).catch(()=>{prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:',url);});
 }
 
-function staffCopyLinkByUid() {
-  if (!staffRef) return;
-  const base = window.location.origin + window.location.pathname;
-  const url  = base + '?uid=' + staffRef.id;
-  navigator.clipboard.writeText(url)
-    .then(()=> toast('📋 คัดลอกลิ้งแล้ว — ส่งให้ ' + staffRef.name + ' ได้เลย','success'))
-    .catch(()=> { prompt('คัดลอก URL นี้แล้วส่งให้สมาชิก:', url); });
+async function renderMemberPage(uid, forceRefresh = false) {
+  document.getElementById('btn-staff').style.display='none';
+  document.getElementById('btn-admin').style.display='none';
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('on');p.style.display='none';});
+  const pg=document.getElementById('pg-member');
+  pg.style.cssText='';pg.classList.add('on');
+  const card=document.getElementById('member-card');
+
+  // แสดง cache ทันทีถ้ามี
+  const cached = !forceRefresh && loadMemberCache(uid);
+  if (cached) {
+    renderMemberCard(card, cached.u, cached.orders, uid);
+    // อัปเดต background เงียบๆ
+    fetchAndRenderMember(card, uid, true);
+  } else {
+    showMemberSkeleton(card);
+    fetchAndRenderMember(card, uid, false);
+  }
 }
 
-// --- render member page (real-time) ---
-async function renderMemberPage(uid) {
-  document.getElementById('btn-staff').style.display = 'none';
-  document.getElementById('btn-admin').style.display = 'none';
-  document.querySelectorAll('.page').forEach(p=>{ p.classList.remove('on'); p.style.display='none'; });
-  const pg = document.getElementById('pg-member');
-  pg.style.cssText = '';
-  pg.classList.add('on');
-
-  const card = document.getElementById('member-card');
-  card.innerHTML = `
-    <div class="mp-header">
-      <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px"></div>
-      <div style="color:rgba(255,255,255,.7);font-size:13px">กำลังโหลดข้อมูล...</div>
-    </div>`;
-
+async function fetchAndRenderMember(card, uid, silent) {
   try {
     const data = await apiGet();
     const u = (data.users||[]).find(u=>u.id===uid);
@@ -1624,179 +1405,80 @@ async function renderMemberPage(uid) {
       card.innerHTML=`<div class="mp-body" style="text-align:center;padding:48px 24px;color:#ef4444">❌ ไม่พบสมาชิก<br><span style="font-size:12px;color:#94a3b8;display:block;margin-top:6px">กรุณาติดต่อแอดมิน</span></div>`;
       return;
     }
-
-    const orders = (data.orders||[]).filter(o=>o.refCode===u.refCode);
-    document.title = `ยอดค่าคอม — ${u.name}`;
-
-    // Tier calculation
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
-    const monthlySales = orders.filter(o=>(+o.ts)>=startOfMonth).reduce((s,o)=>s+o.amt, 0);
-    const tier    = getTier(monthlySales);
-    const nxt     = getNextTier(monthlySales);
-    const tierPct = nxt ? Math.min(100,((monthlySales-tier.min)/(nxt.min-tier.min))*100) : 100;
-
-    // tier colors for white theme
-    const tc = {
-      Bronze: {c:'#92400e', bg:'#fef3c7', border:'#fde68a', grad:'#f59e0b,#d97706'},
-      Silver: {c:'#475569', bg:'#f1f5f9', border:'#cbd5e1', grad:'#94a3b8,#64748b'},
-      Gold:   {c:'#92400e', bg:'#fffbeb', border:'#fde68a', grad:'#f59e0b,#ea580c'},
-      Diamond:{c:'#0369a1', bg:'#eff6ff', border:'#bfdbfe', grad:'#3b82f6,#0ea5e9'},
-    }[tier.name] || {c:'#475569',bg:'#f1f5f9',border:'#e2e8f0',grad:'#94a3b8,#64748b'};
-
-    const orderRows = orders.length
-      ? [...orders].sort((a,b)=>b.ts-a.ts).slice(0,10).map(o=>`
-          <div class="mp-order">
-            <div class="mp-order-dot"></div>
-            <div class="mp-order-info">
-              <div class="mp-order-customer">${o.customerName||'<span style="color:#94a3b8;font-weight:400">ไม่ระบุชื่อ</span>'}</div>
-              <div class="mp-order-date">${new Date(+o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})} · ฿${fmti(o.amt)}</div>
-            </div>
-            <div class="mp-order-comm">+฿${fmt(o.commission)}</div>
-          </div>`).join('')
-      : `<div style="text-align:center;padding:24px 0;color:#94a3b8;font-size:13px">ยังไม่มีออเดอร์ผ่านรหัสของคุณ</div>`;
-
-    const now = new Date().toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-
-    card.innerHTML = `
-      <!-- HEADER -->
-      <div class="mp-header">
-        <div class="mp-avatar">${u.name.charAt(0).toUpperCase()}</div>
-        <div class="mp-name">${u.name}</div>
-        <div class="mp-code" id="mp-code-btn" onclick="copyRefCode('${u.refCode}')" style="cursor:pointer;user-select:none;transition:all .2s;" title="แตะเพื่อคัดลอกรหัส">📋 &nbsp;${u.refCode}</div>
-      </div>
-
-      <div class="mp-body">
-        <!-- TIER -->
-        <div class="mp-tier" style="--tc:${tc.c};--tbg:${tc.bg};border-color:${tc.border}">
-          <div class="mp-tier-icon">${tier.icon}</div>
-          <div class="mp-tier-info">
-            <div class="mp-tier-name">${tier.name}</div>
-            <div class="mp-tier-rate">ค่าคอมเดือนนี้ <b style="color:${tc.c}">${tier.rate}%</b> · ยอดขาย ฿${fmti(monthlySales)}</div>
-            ${nxt ? `
-            <div class="mp-progress-wrap">
-              <div class="mp-progress-label">
-                <span>ความคืบหน้า</span>
-                <span>อีก ฿${fmti(nxt.min-monthlySales)} → ${nxt.icon}${nxt.name}</span>
-              </div>
-              <div class="mp-progress-bar">
-                <div class="mp-progress-fill" style="width:${tierPct}%;background:linear-gradient(90deg,${tc.grad})"></div>
-              </div>
-            </div>` : `<div style="font-size:11px;color:#0369a1;margin-top:6px;font-weight:700">🏆 ระดับสูงสุดแล้ว!</div>`}
-          </div>
-        </div>
-
-        <!-- STATS -->
-        <div class="mp-stats">
-          <div class="mp-stat" style="--sb:linear-gradient(90deg,#10b981,#059669);--sc:#065f46">
-            <div class="mp-stat-label">ค่าคอมสะสม</div>
-            <div class="mp-stat-value">฿${fmt(u.totalComm||0)}</div>
-            <div class="mp-stat-sub">จาก ${u.orderCount||0} ออเดอร์</div>
-          </div>
-          <div class="mp-stat" style="--sb:linear-gradient(90deg,#f59e0b,#ea580c);--sc:#92400e">
-            <div class="mp-stat-label">รอรับเงิน</div>
-            <div class="mp-stat-value">฿${fmt(u.pendingComm||0)}</div>
-            <div class="mp-stat-sub">ยังไม่ได้โอน</div>
-          </div>
-          <div class="mp-stat mp-stat-full" style="--sb:linear-gradient(90deg,#3b82f6,#0ea5e9);--sc:#1e40af">
-            <div class="mp-stat-label">รับไปแล้ว</div>
-            <div class="mp-stat-value">฿${fmt(u.paidComm||0)}</div>
-            <div class="mp-stat-sub">โอนเข้าบัญชีแล้ว</div>
-          </div>
-        </div>
-
-        <!-- ORDERS -->
-        <div class="mp-section-title">ออเดอร์ล่าสุด</div>
-        ${orderRows}
-      </div>
-
-      <!-- FOOTER -->
-      <div class="mp-footer">
-        <span>🕐 ${now}</span>
-        <button class="mp-refresh" onclick="renderMemberPage('${uid}')">🔄 รีเฟรช</button>
-      </div>
-    `;
+    const orders=(data.orders||[]).filter(o=>o.refCode===u.refCode);
+    saveMemberCache(uid, { u, orders });
+    renderMemberCard(card, u, orders, uid);
+    document.title=`ยอดค่าคอม — ${u.name}`;
   } catch(e) {
-    card.innerHTML=`
-      <div class="mp-body" style="text-align:center;padding:48px 24px">
-        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
-        <div style="color:#ef4444;font-weight:700;margin-bottom:6px">โหลดข้อมูลไม่สำเร็จ</div>
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:20px">${e.message}</div>
-        <button class="mp-refresh" onclick="renderMemberPage('${uid}')" style="padding:8px 20px">ลองใหม่</button>
-      </div>`;
-  }
-}
-
-function copyRefCode(code) {
-  const el = document.getElementById('mp-code-btn');
-  const ok = () => {
-    el.innerHTML = '✅ คัดลอกแล้ว!';
-    el.style.background = 'rgba(16,185,129,.25)';
-    setTimeout(() => { el.innerHTML = '📋 &nbsp;' + code; el.style.background = ''; }, 2000);
-  };
-
-  // วิธีที่ 1: Clipboard API (desktop + modern mobile)
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(code).then(ok).catch(() => fallback());
-  } else {
-    fallback();
-  }
-
-  // วิธีที่ 2: execCommand fallback (iOS Safari, LINE browser)
-  function fallback() {
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = code;
-      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      ta.setSelectionRange(0, 9999); // iOS ต้องการบรรทัดนี้
-      const success = document.execCommand('copy');
-      document.body.removeChild(ta);
-      if (success) ok();
-      else { el.innerHTML = '📋 ' + code + ' (กดค้างเพื่อ copy)'; }
-    } catch(e) {
-      el.innerHTML = '📋 ' + code + ' (กดค้างเพื่อ copy)';
+    if (!silent) {
+      card.innerHTML=`<div class="mp-body" style="text-align:center;padding:48px 24px"><div style="font-size:32px;margin-bottom:12px">⚠️</div><div style="color:#ef4444;font-weight:700;margin-bottom:6px">โหลดข้อมูลไม่สำเร็จ</div><div style="font-size:12px;color:#94a3b8;margin-bottom:20px">${e.message}</div><button class="mp-refresh" onclick="renderMemberPage('${uid}',true)" style="padding:8px 20px">ลองใหม่</button></div>`;
     }
+    // ถ้า silent แค่เงียบๆ ให้ cache เก่าแสดงอยู่
   }
 }
 
-// --- check URL on load ---
-function checkMemberUrl() {
-  const params = new URLSearchParams(window.location.search);
-  // รองรับทั้ง ?uid= (ใหม่ real-time) และ ?m= (เก่า)
-  const uid = params.get('uid');
-  if (uid) { renderMemberPage(uid); return true; }
+function renderMemberCard(card, u, orders, uid) {
+  const startOfMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
+  const monthlySales=orders.filter(o=>(+o.ts)>=startOfMonth).reduce((s,o)=>s+o.amt,0);
+  const tier=getTier(monthlySales);
+  const nxt=getNextTier(monthlySales);
+  const tierPct=nxt?Math.min(100,((monthlySales-tier.min)/(nxt.min-tier.min))*100):100;
+  const tc={Bronze:{c:'#92400e',bg:'#fef3c7',border:'#fde68a',grad:'#f59e0b,#d97706'},Silver:{c:'#475569',bg:'#f1f5f9',border:'#cbd5e1',grad:'#94a3b8,#64748b'},Gold:{c:'#92400e',bg:'#fffbeb',border:'#fde68a',grad:'#f59e0b,#ea580c'},Diamond:{c:'#0369a1',bg:'#eff6ff',border:'#bfdbfe',grad:'#3b82f6,#0ea5e9'}}[tier.name]||{c:'#475569',bg:'#f1f5f9',border:'#e2e8f0',grad:'#94a3b8,#64748b'};
+  const orderRows=orders.length
+    ?[...orders].sort((a,b)=>b.ts-a.ts).slice(0,10).map(o=>`<div class="mp-order"><div class="mp-order-dot"></div><div class="mp-order-info"><div class="mp-order-customer">${o.customerName||'<span style="color:#94a3b8;font-weight:400">ไม่ระบุชื่อ</span>'}</div><div class="mp-order-date">${new Date(+o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})} · ฿${fmti(o.amt)}</div></div><div class="mp-order-comm">+฿${fmt(o.commission)}</div></div>`).join('')
+    :`<div style="text-align:center;padding:24px 0;color:#94a3b8;font-size:13px">ยังไม่มีออเดอร์ผ่านรหัสของคุณ</div>`;
+  const now=new Date().toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  card.innerHTML=`
+    <div class="mp-header">
+      <div class="mp-avatar">${u.name.charAt(0).toUpperCase()}</div>
+      <div class="mp-name">${u.name}</div>
+      <div class="mp-code" id="mp-code-btn" onclick="copyRefCode('${u.refCode}')" style="cursor:pointer;user-select:none;transition:all .2s;" title="แตะเพื่อคัดลอกรหัส">📋 &nbsp;${u.refCode}</div>
+    </div>
+    <div class="mp-body">
+      <div class="mp-tier" style="--tc:${tc.c};--tbg:${tc.bg};border-color:${tc.border}">
+        <div class="mp-tier-icon">${tier.icon}</div>
+        <div class="mp-tier-info">
+          <div class="mp-tier-name">${tier.name}</div>
+          <div class="mp-tier-rate">ค่าคอมเดือนนี้ <b style="color:${tc.c}">${tier.rate}%</b> · ยอดขาย ฿${fmti(monthlySales)}</div>
+          ${nxt?`<div class="mp-progress-wrap"><div class="mp-progress-label"><span>ความคืบหน้า</span><span>อีก ฿${fmti(nxt.min-monthlySales)} → ${nxt.icon}${nxt.name}</span></div><div class="mp-progress-bar"><div class="mp-progress-fill" style="width:${tierPct}%;background:linear-gradient(90deg,${tc.grad})"></div></div></div>`:`<div style="font-size:11px;color:#0369a1;margin-top:6px;font-weight:700">🏆 ระดับสูงสุดแล้ว!</div>`}
+        </div>
+      </div>
+      <div class="mp-stats">
+        <div class="mp-stat" style="--sb:linear-gradient(90deg,#10b981,#059669);--sc:#065f46"><div class="mp-stat-label">ค่าคอมสะสม</div><div class="mp-stat-value">฿${fmt(u.totalComm||0)}</div><div class="mp-stat-sub">จาก ${u.orderCount||0} ออเดอร์</div></div>
+        <div class="mp-stat" style="--sb:linear-gradient(90deg,#f59e0b,#ea580c);--sc:#92400e"><div class="mp-stat-label">รอรับเงิน</div><div class="mp-stat-value">฿${fmt(u.pendingComm||0)}</div><div class="mp-stat-sub">ยังไม่ได้โอน</div></div>
+        <div class="mp-stat mp-stat-full" style="--sb:linear-gradient(90deg,#3b82f6,#0ea5e9);--sc:#1e40af"><div class="mp-stat-label">รับไปแล้ว</div><div class="mp-stat-value">฿${fmt(u.paidComm||0)}</div><div class="mp-stat-sub">โอนเข้าบัญชีแล้ว</div></div>
+      </div>
+      <div class="mp-section-title">ออเดอร์ล่าสุด</div>
+      ${orderRows}
+    </div>
+    <div class="mp-footer">
+      <span>🕐 ${now}</span>
+      <button class="mp-refresh" onclick="renderMemberPage('${uid}',true)">🔄 รีเฟรช</button>
+    </div>`;
+}
 
-  // fallback: รองรับลิ้งเก่า ?m=
-  const encoded = params.get('m') || params.get('member');
-  if (encoded) {
-    // แสดงผลจาก encoded data แต่แจ้งให้ขอลิ้งใหม่
-    try {
-      const b64 = encoded.replace(/-/g,'+').replace(/_/g,'/');
-      const raw = atob(b64);
-      const bytes = Uint8Array.from(raw, c=>c.charCodeAt(0));
-      const d = JSON.parse(new TextDecoder().decode(bytes));
-      const name = d.n||d.name||'';
-      if (name) {
-        setTimeout(()=> toast('⚠️ ลิ้งนี้เป็นแบบเก่า ขอลิ้งใหม่จากพนักงานเพื่อดูยอด real-time','warning'), 500);
-        // redirect ไปหา uid ถ้ามี
-        if (d.id) { renderMemberPage(d.id); return true; }
-      }
-    } catch(e){}
-    setTimeout(()=> toast('ลิ้งไม่ถูกต้อง กรุณาขอลิ้งใหม่จากพนักงาน','error'), 300);
-    return false;
+function copyRefCode(code){
+  const el=document.getElementById('mp-code-btn');
+  const ok=()=>{el.innerHTML='✅ คัดลอกแล้ว!';el.style.background='rgba(16,185,129,.25)';setTimeout(()=>{el.innerHTML='📋 &nbsp;'+code;el.style.background='';},2000);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(code).then(ok).catch(()=>fallback());}else{fallback();}
+  function fallback(){try{const ta=document.createElement('textarea');ta.value=code;ta.style.cssText='position:fixed;top:0;left:0;opacity:0;font-size:16px';document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,9999);const success=document.execCommand('copy');document.body.removeChild(ta);if(success)ok();else{el.innerHTML='📋 '+code+' (กดค้างเพื่อ copy)';}}catch(e){el.innerHTML='📋 '+code+' (กดค้างเพื่อ copy)';}}
+}
+
+function checkMemberUrl(){
+  const params=new URLSearchParams(window.location.search);
+  const uid=params.get('uid');
+  if(uid){renderMemberPage(uid);return true;}
+  const encoded=params.get('m')||params.get('member');
+  if(encoded){
+    try{const b64=encoded.replace(/-/g,'+').replace(/_/g,'/');const raw=atob(b64);const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));const d=JSON.parse(new TextDecoder().decode(bytes));if(d.id){renderMemberPage(d.id);return true;}}catch(e){}
+    setTimeout(()=>toast('ลิ้งไม่ถูกต้อง กรุณาขอลิ้งใหม่จากพนักงาน','error'),300);return false;
   }
   return false;
 }
 
 // ─── INIT ──────────────────────────────
-if (!checkMemberUrl()) {
-  if (API_URL === 'YOUR_APPS_SCRIPT_URL') {
-    loadDemo();
-  } else {
-    loadFromSheets();
-  }
+if(!checkMemberUrl()){
+  loadFromSheets();
 }
 </script>
 </body>
