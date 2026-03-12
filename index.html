@@ -742,7 +742,9 @@ async function connectLINE(uid) {
   try {
     // ถ้ายังไม่ได้ Login → redirect ไป LINE Login
     if (!liff.isLoggedIn()) {
-      liff.login({ redirectUri: window.location.href });
+      // เก็บ uid ไว้ก่อน redirect เพราะ LIFF จะตัด query string ออก
+      sessionStorage.setItem('liff_pending_uid', uid);
+      liff.login({ redirectUri: window.location.href.split('?')[0] });
       return;
     }
 
@@ -1537,12 +1539,23 @@ function copyRefCode(code){
 }
 
 function checkMemberUrl(){
-  // รองรับทั้ง ?uid=xxx (ปกติ) และ #uid=xxx (LIFF)
+  // รองรับ ?uid=xxx (ปกติ)
   const fromSearch = new URLSearchParams(window.location.search).get('uid');
-  const hash = window.location.hash.replace(/^#/,'');
-  const fromHash = new URLSearchParams(hash).get('uid') || (hash.startsWith('uid=') ? hash.split('=')[1].split('&')[0] : null);
-  const uid = fromSearch || fromHash;
-  if(uid && uid.length > 2){ renderMemberPage(uid); return true; }
+  // รองรับ sessionStorage หลัง LIFF redirect กลับมา
+  const fromSession = sessionStorage.getItem('liff_pending_uid');
+  const uid = fromSearch || fromSession || null;
+  if(uid && uid.length > 2){
+    if(fromSession && !fromSearch) {
+      // LIFF redirect กลับมา — ลอง auto-connect
+      sessionStorage.removeItem('liff_pending_uid');
+      renderMemberPage(uid);
+      // auto trigger connectLINE หลัง render
+      setTimeout(() => connectLINE(uid), 800);
+      return true;
+    }
+    renderMemberPage(uid);
+    return true;
+  }
   return false;
 }
 
