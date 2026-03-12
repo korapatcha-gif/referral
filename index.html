@@ -1036,7 +1036,7 @@ function aTab(t){
   document.getElementById('pn-'+t).classList.add('on');
   const idx=['users','orders','comm','board','line'].indexOf(t);
   if(idx>=0) document.querySelectorAll('.tb')[idx].classList.add('on');
-  if(t==='line') renderNotifyLog();
+  
 }
 
 // ─── RATE ──────────────────────────────────
@@ -1127,26 +1127,9 @@ async function staffSubmit(){
   // บันทึก Sheets
   apiPost({action:'addOrder',order}).catch(e=>toast('⚠️ บันทึก Sheets ไม่สำเร็จ: '+e.message,'error'));
 
-  // ── ส่ง LINE Notify ──
-  let lineSentOk = false;
-  const notifOrder = document.getElementById('notif-order');
-  const notifAdmin = document.getElementById('notif-admin');
-
-  if(ref && ref.lineToken && notifOrder && notifOrder.checked){
-    const monthly = getMonthlySales(ref.id);
-    const tier = getTier(monthly);
-    const msg = buildOrderMsgForMember(order, ref, monthly, tier);
-    const res = await sendLine(ref.lineToken, msg);
-    lineSentOk = res.ok;
-    if(res.ok) toast(`💬 LINE แจ้ง ${ref.name} แล้ว`,'line');
-  }
-
-  if(ADMIN_LINE_TOKEN && notifAdmin && notifAdmin.checked){
-    const totalPending = DB.users.reduce((s,u)=>s+(u.pendingComm||0),0);
-    const msg = buildOrderMsgForAdmin(order, ref, totalPending);
-    sendLine(ADMIN_LINE_TOKEN, msg);
-  }
-
+  // ── LINE แจ้งเตือนผ่าน Apps Script (Messaging API) ──
+  const lineSentOk = !!(ref && ref.lineUserId);
+  if(lineSentOk) toast(`💚 LINE แจ้ง ${ref.name} แล้ว`, 'line');
   order.lineSent = lineSentOk;
   showSuccess(order, ref, lineSentOk);
 }
@@ -1229,9 +1212,7 @@ async function addUser(){
     document.getElementById('test-new').style.display='none';
     toast(`เพิ่ม ${name} สำเร็จ — รหัส: ${refCode}${lineToken?' + LINE ✓':''}`);
     // ส่ง LINE ต้อนรับ
-    if(lineToken){
-      sendLine(lineToken,`\n🎉 ยินดีต้อนรับสู่ระบบ Referral!\n─────────────────\n👤 ชื่อ: ${name}\n🔑 รหัสของคุณ: ${refCode}\n─────────────────\n💡 แชร์รหัสนี้ให้ลูกค้า\nแล้วรับค่าคอมทันที!`);
-    }
+    // LINE ต้อนรับ — สมาชิกจะได้รับเมื่อ Login ผ่าน LIFF
     renderAdmin();
   }catch(e){toast('เพิ่มสมาชิกไม่สำเร็จ: '+e.message,'error');}
   finally{showLoading(false);}
@@ -1259,8 +1240,8 @@ async function payout(uid){
     // ส่ง LINE แจ้งสมาชิก
     const notifPayout=document.getElementById('notif-payout');
     if(u.lineToken && notifPayout && notifPayout.checked){
-      const msg=buildPayoutMsg(u,a);
-      sendLine(u.lineToken,msg).then(res=>{
+      // LINE แจ้งจ่ายเงิน — Apps Script จัดการให้อัตโนมัติ
+      if(true){
         if(res.ok) toast(`💬 LINE แจ้ง ${u.name} เรื่องโอนเงินแล้ว`,'line');
       });
     }
@@ -1292,7 +1273,7 @@ async function setUserRate(uid,rate){
 
 function copyCode(c){navigator.clipboard.writeText(c).then(()=>toast(`คัดลอก ${c}`,'info')).catch(()=>{});}
 
-function renderAdmin(){rStats();rUsers();rOrders();rComm();rBoard();rLog();rPlog();renderNotifyLog();}
+function renderAdmin(){rStats();rUsers();rOrders();rComm();rBoard();rLog();rPlog();}
 
 function rStats(){
   const gmv=DB.orders.reduce((s,o)=>s+o.amt,0);
@@ -1476,16 +1457,7 @@ async function fetchAndRenderMember(card, uid, silent) {
   }
 }
 
-async function saveMemberLineToken(uid, token) {
-  const t = token.trim();
-  try {
-    await apiPost({ action: 'updateUser', user: { id: uid, lineToken: t } });
-    if (t) {
-      sendLine(t, `\n✅ เชื่อมต่อ LINE Notify สำเร็จ!\n💬 คุณจะได้รับแจ้งเตือนทันทีเมื่อมีออเดอร์ผ่านรหัสของคุณ`);
-    }
-    return true;
-  } catch(e) { return false; }
-}
+// saveMemberLineToken removed — ใช้ LIFF Login แทน
 
 function renderMemberCard(card, u, orders, uid) {
   const startOfMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
