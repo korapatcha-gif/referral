@@ -695,123 +695,109 @@ input.mp-line-input:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,
 // ════════════════════════════════════════════════════════════
 //  GOOGLE SHEETS API
 // ════════════════════════════════════════════════════════════
-let API_URL = 'https://script.google.com/macros/s/AKfycbyFZj2BhDrlkhfZy7GoRHF3E4CzzI9PqW4bBqxYNvAxRAdc9ZOKwbXAfnmFwPcyD_Hh/exec';
+let API_URL = 'https://script.google.com/macros/s/AKfycbwceYIpE6TP6gdnJIsyIw9VtitEnYY2iczeHh16aOWhop8Kh-g8eTPgWBEE6veH2IcJ/exec';
 
 // ════════════════════════════════════════════════════════════
-//  LINE NOTIFY SYSTEM
+//  LINE MESSAGING API — ผ่าน Apps Script relay
+//  (ไม่ใช้ LINE Notify แล้ว — ปิดบริการแล้ว)
 // ════════════════════════════════════════════════════════════
-const LINE_API = 'https://notify-api.line.me/api/notify';
-let ADMIN_LINE_TOKEN = '';
-let notifyLog = [];
+const LINE_CONFIG = {
+  LIFF_ID:  '2009430865-m94CGNvP',
+  LIFF_URL: 'https://liff.line.me/2009430865-m94CGNvP',
+};
 
-// ── Load/Save LINE settings from localStorage ──
-function loadLineSettings() {
-  try {
-    ADMIN_LINE_TOKEN = localStorage.getItem('admin_line_token') || '';
-    if (ADMIN_LINE_TOKEN) {
-      const el = document.getElementById('admin-line-token');
-      if (el) { el.value = ADMIN_LINE_TOKEN; el.classList.add('set'); }
-    }
-    const saved = localStorage.getItem('notify_log');
-    if (saved) notifyLog = JSON.parse(saved).slice(0, 50);
-  } catch(e) {}
+let liffReady = false;
+
+// โหลด LIFF SDK
+function loadLIFF() {
+  return new Promise((resolve) => {
+    if (window.liff) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
+    s.onload = async () => {
+      try {
+        await liff.init({ liffId: LINE_CONFIG.LIFF_ID });
+        liffReady = true;
+      } catch(e) { console.warn('LIFF init:', e); }
+      resolve();
+    };
+    s.onerror = () => resolve();
+    document.head.appendChild(s);
+  });
 }
 
-function saveAdminToken() {
-  const val = document.getElementById('admin-line-token').value.trim();
-  ADMIN_LINE_TOKEN = val;
-  try { localStorage.setItem('admin_line_token', val); } catch(e) {}
-  const el = document.getElementById('admin-line-token');
-  if (val) { el.classList.add('set'); toast('💬 บันทึก Admin LINE Token แล้ว', 'line'); }
-  else { el.classList.remove('set'); toast('ลบ Admin Token แล้ว', 'warning'); }
-}
+// สมาชิกกด "เชื่อม LINE" → Login → ได้ userId → บันทึก
+async function connectLINE(uid) {
+  const btn = document.getElementById('mp-line-btn-' + uid);
+  if (btn) { btn.textContent = '⏳ กำลังโหลด...'; btn.disabled = true; }
 
-function onAdminTokenInput() {
-  const val = document.getElementById('admin-line-token').value.trim();
-  const el = document.getElementById('admin-line-token');
-  if (val) el.classList.add('set'); else el.classList.remove('set');
-}
+  await loadLIFF();
 
-// ── ส่ง LINE ผ่าน Apps Script (relay) เพื่อหลีก CORS ──
-async function sendLine(token, message) {
-  if (!token) return { ok: false, reason: 'no_token' };
-  try {
-    // ส่งผ่าน Apps Script เป็น relay
-    const res = await apiPost({ action: 'sendLine', token, message });
-    addNotifyLog(true, message.substring(0, 40));
-    return { ok: true };
-  } catch(e) {
-    addNotifyLog(false, message.substring(0, 40));
-    return { ok: false, reason: e.message };
-  }
-}
-
-function addNotifyLog(ok, msg) {
-  notifyLog.unshift({ ok, msg, ts: Date.now() });
-  if (notifyLog.length > 50) notifyLog.pop();
-  try { localStorage.setItem('notify_log', JSON.stringify(notifyLog)); } catch(e) {}
-  renderNotifyLog();
-}
-
-function renderNotifyLog() {
-  const el = document.getElementById('notify-log');
-  if (!el) return;
-  if (!notifyLog.length) {
-    el.innerHTML = '<div class="emp" style="padding:20px"><div class="ic">💬</div>ยังไม่มีการส่ง LINE</div>';
+  if (!liffReady) {
+    alert('โหลด LINE SDK ไม่สำเร็จ กรุณาลองใหม่');
+    if (btn) { btn.textContent = '💚 เชื่อมต่อ LINE'; btn.disabled = false; }
     return;
   }
-  el.innerHTML = notifyLog.slice(0, 20).map(l => `
-    <div class="nlog-item">
-      <div class="nlog-dot ${l.ok ? 'ok' : 'fail'}"></div>
-      <div style="flex:1">${l.ok ? '✅' : '❌'} ${escHtml(l.msg)}...</div>
-      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">${ft(l.ts)}</div>
-    </div>`).join('');
+
+  try {
+    // ถ้ายังไม่ได้ Login → redirect ไป LINE Login
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: window.location.href });
+      return;
+    }
+
+    // ได้ Login แล้ว → ดึง profile
+    const profile = await liff.getProfile();
+    const lineUserId = profile.userId;
+    const lineDisplayName = profile.displayName;
+
+    if (btn) btn.textContent = '⏳ กำลังบันทึก...';
+
+    // บันทึกลง Sheets ผ่าน Apps Script
+    const res = await apiPost({
+      action: 'saveLINEUserId',
+      uid,
+      lineUserId,
+      lineDisplayName,
+    });
+
+    if (res !== null) {
+      // อัปเดต cache
+      const cached = loadMemberCache(uid);
+      if (cached) {
+        cached.u.lineUserId = lineUserId;
+        cached.u.lineDisplayName = lineDisplayName;
+        saveMemberCache(uid, cached);
+      }
+      renderMemberPage(uid, true);
+    }
+
+  } catch(e) {
+    console.error('LINE connect error:', e);
+    alert('เชื่อมต่อไม่สำเร็จ: ' + e.message);
+    if (btn) { btn.textContent = '💚 เชื่อมต่อ LINE'; btn.disabled = false; }
+  }
 }
 
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-async function testAdminLine() {
-  const token = document.getElementById('admin-line-token').value.trim();
-  const el = document.getElementById('admin-line-test');
-  el.style.display = 'block'; el.className = 'line-test-result'; el.textContent = '⏳ กำลังส่งทดสอบ...';
-  const res = await sendLine(token, '\n🔔 ทดสอบระบบ LINE Notify\n✅ Admin token ใช้งานได้!\nระบบ Referral & Commission พร้อมใช้งาน');
-  if (res.ok) { el.className = 'line-test-result ok'; el.textContent = '✅ ส่งสำเร็จ! เช็ค LINE ของคุณได้เลย'; }
-  else { el.className = 'line-test-result err'; el.textContent = '❌ ส่งไม่สำเร็จ: ' + res.reason + ' (ตรวจสอบ token ใหม่)'; }
-}
-
-async function testLineToken(token, resultId) {
-  const el = document.getElementById(resultId);
-  if (!el) return;
-  if (!token) { el.style.display = 'block'; el.className = 'line-test-result err'; el.textContent = '❌ กรุณาวาง token ก่อน'; return; }
-  el.style.display = 'block'; el.className = 'line-test-result'; el.textContent = '⏳ กำลังส่งทดสอบ...';
-  const res = await sendLine(token, '\n🎉 ลงทะเบียน LINE Notify สำเร็จ!\n💬 คุณจะได้รับแจ้งเตือนทันทีเมื่อมีออเดอร์ผ่านรหัสของคุณ\nระบบ Referral พร้อมแจ้งเตือนแล้ว ✅');
-  if (res.ok) { el.className = 'line-test-result ok'; el.textContent = '✅ ส่งสำเร็จ! สมาชิกได้รับ LINE แล้ว'; }
-  else { el.className = 'line-test-result err'; el.textContent = '❌ ส่งไม่สำเร็จ: ' + res.reason; }
-}
-
-// ── Build LINE messages ──
-function buildOrderMsgForMember(order, user, monthlySales, tier) {
-  const next = getNextTier(monthlySales);
-  const gap = next ? `\n🎯 อีก ฿${fmti(next.min - monthlySales)} ขึ้น ${next.icon}${next.name} (${next.rate}%)` : '\n🏆 ระดับสูงสุดแล้ว!';
-  return `\n💰 มีออเดอร์ใหม่!\n─────────────────\n👤 ลูกค้า: ${order.customerName || 'ไม่ระบุ'}\n🛒 ยอดซื้อ: ฿${fmt(order.amt)}\n💵 ค่าคอมคุณ: +฿${fmt(order.commission)} (${order.rate}%)\n─────────────────\n📊 สะสมเดือนนี้: ฿${fmt(monthlySales > 0 ? calcCommFromSales(user, monthlySales) : user.totalComm || 0)}\n⏳ รอรับ: ฿${fmt(user.pendingComm || 0)}\n🏅 Tier: ${tier.icon}${tier.name}${gap}`;
-}
-
-function buildOrderMsgForAdmin(order, user, totalPending) {
-  return `\n🛒 ออเดอร์ใหม่ #${order.id}\n─────────────────\n💰 ฿${fmt(order.amt)} | รหัส: ${order.refCode}\n👤 แนะนำโดย: ${user ? user.name : '—'}\n💸 ค่าคอม: ฿${fmt(order.commission)} → รอจ่าย\n─────────────────\n📦 ออเดอร์วันนี้: ${DB.orders.filter(o => isToday(o.ts)).length} รายการ\n💵 ยอดรอจ่ายรวม: ฿${fmt(totalPending)}`;
-}
-
-function buildPayoutMsg(user, amount) {
-  return `\n✅ โอนเงินแล้ว!\n─────────────────\n💵 ฿${fmt(amount)} บาท\n🏦 บัญชี: ${user.bank || 'ไม่มีข้อมูล'}\n─────────────────\nขอบคุณที่ช่วยแนะนำลูกค้า 🙏\n💰 ยอดรวมทั้งหมด: ฿${fmt(user.paidComm || 0)}`;
-}
-
-function calcCommFromSales(user, monthlySales) {
-  // ประมาณจาก totalComm ที่มีอยู่
-  return user.totalComm || 0;
-}
-
-function isToday(ts) {
-  const d = new Date(+ts), n = new Date();
-  return d.getDate() === n.getDate() && d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
+// ตรวจสอบว่า redirect กลับมาจาก LINE Login หรือเปล่า
+async function checkLIFFCallback(uid) {
+  if (!window.liff) return;
+  try {
+    await liff.init({ liffId: LINE_CONFIG.LIFF_ID });
+    if (liff.isLoggedIn()) {
+      const profile = await liff.getProfile();
+      if (profile && uid) {
+        await apiPost({
+          action: 'saveLINEUserId',
+          uid,
+          lineUserId: profile.userId,
+          lineDisplayName: profile.displayName,
+        });
+        liff.logout();
+        renderMemberPage(uid, true);
+      }
+    }
+  } catch(e) {}
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1512,26 +1498,31 @@ function renderMemberCard(card, u, orders, uid) {
     ?[...orders].sort((a,b)=>b.ts-a.ts).slice(0,10).map(o=>`<div class="mp-order"><div class="mp-order-dot"></div><div class="mp-order-info"><div class="mp-order-customer">${o.customerName||'<span style="color:#94a3b8;font-weight:400">ไม่ระบุชื่อ</span>'}</div><div class="mp-order-date">${new Date(+o.ts).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'})} · ฿${fmti(o.amt)}</div></div><div class="mp-order-comm">+฿${fmt(o.commission)}</div></div>`).join('')
     :`<div style="text-align:center;padding:24px 0;color:#94a3b8;font-size:13px">ยังไม่มีออเดอร์</div>`;
 
-  // LINE register section
-  const lineSection = u.lineToken
+  // LINE connect section — ใช้ LIFF Login แทน token
+  const hasLine = !!(u.lineUserId);
+  const lineSection = hasLine
     ? `<div class="mp-line-registered">
-        <span style="font-size:24px">💬</span>
+        <span style="font-size:24px">💚</span>
         <div style="flex:1">
-          <div style="font-size:14px;font-weight:700;color:#166534">เชื่อมต่อ LINE แล้ว</div>
-          <div style="font-size:12px;color:#4b7a5a;margin-top:2px">รับแจ้งเตือนทันทีเมื่อมีออเดอร์</div>
+          <div style="font-size:14px;font-weight:700;color:#166534">เชื่อม LINE แล้ว ✅</div>
+          <div style="font-size:12px;color:#4b7a5a;margin-top:2px">รับแจ้งเตือนทันทีเมื่อมีออเดอร์ · ${u.lineDisplayName || ''}</div>
         </div>
-        <button onclick="changeMemberLine('${uid}')" style="background:#fff;border:1px solid #86efac;border-radius:8px;padding:6px 12px;font-size:12px;color:#166534;cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:700;">เปลี่ยน</button>
+        <button onclick="disconnectLINE('${uid}')" style="background:#fff;border:1px solid #fca5a5;border-radius:8px;padding:6px 12px;font-size:11px;color:#dc2626;cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:700;">ยกเลิก</button>
       </div>`
     : `<div class="mp-line-register">
-        <div class="mp-line-register-title">💬 เชื่อม LINE รับแจ้งเตือนทันที</div>
-        <div class="mp-line-register-sub">รับ LINE ทันทีที่มีคนซื้อผ่านรหัสของคุณ — ไม่ต้องเข้ามาเช็คเอง</div>
+        <div class="mp-line-register-title">💚 เชื่อม LINE รับแจ้งเตือนทันที</div>
+        <div class="mp-line-register-sub">กด 1 ครั้ง — Login ด้วย LINE แล้วรับแจ้งเตือนอัตโนมัติเมื่อมีออเดอร์ผ่านรหัสคุณ</div>
         <div class="mp-line-steps">
-          <div class="mp-line-step"><div class="mp-line-step-num">1</div><div>ไปที่ <a href="https://notify-bot.line.me" target="_blank" style="color:#16a34a;font-weight:700">notify-bot.line.me</a> แล้ว Log in ด้วยบัญชี LINE</div></div>
-          <div class="mp-line-step"><div class="mp-line-step-num">2</div><div>กด "Generate token" → เลือก "1:1 with LINE Notify" → คัดลอก token</div></div>
-          <div class="mp-line-step"><div class="mp-line-step-num">3</div><div>วาง token ด้านล่างนี้ แล้วกด "เชื่อมต่อ"</div></div>
+          <div class="mp-line-step"><div class="mp-line-step-num">1</div><div>กดปุ่มด้านล่าง → Login ด้วยบัญชี LINE ของคุณ</div></div>
+          <div class="mp-line-step"><div class="mp-line-step-num">2</div><div>กด "Allow" อนุญาตการเข้าถึง</div></div>
+          <div class="mp-line-step"><div class="mp-line-step-num">3</div><div>เสร็จแล้ว! รับแจ้งเตือนทันทีเมื่อมีออเดอร์</div></div>
         </div>
-        <input class="mp-line-input" id="mp-line-input-${uid}" type="text" placeholder="วาง LINE Notify Token ที่นี่">
-        <button class="mp-line-save-btn" onclick="connectMemberLine('${uid}')">💬 เชื่อมต่อ LINE Notify</button>
+        <button class="mp-line-save-btn" id="mp-line-btn-${uid}" onclick="connectLINE('${uid}')">
+          💚 เชื่อมต่อ LINE — Login ด้วย LINE
+        </button>
+        <div style="font-size:11px;color:#6b7280;text-align:center;margin-top:8px">
+          ต้อง Add Friend <b>LINE OA ของ Pimpleats</b> ก่อนนะครับ
+        </div>
       </div>`;
 
   const now=new Date().toLocaleString('th-TH',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -1565,27 +1556,11 @@ function renderMemberCard(card, u, orders, uid) {
     </div>`;
 }
 
-async function connectMemberLine(uid) {
-  const inp = document.getElementById(`mp-line-input-${uid}`);
-  if (!inp) return;
-  const token = inp.value.trim();
-  if (!token) { alert('กรุณาวาง token ก่อน'); return; }
-  inp.disabled = true;
-  const ok = await saveMemberLineToken(uid, token);
-  if (ok) {
-    // อัปเดต local cache
-    const cached = loadMemberCache(uid);
-    if (cached) { cached.u.lineToken = token; saveMemberCache(uid, cached); }
-    renderMemberPage(uid, true);
-  } else {
-    inp.disabled = false;
-    alert('บันทึกไม่สำเร็จ กรุณาลองใหม่');
-  }
-}
-
-function changeMemberLine(uid) {
+async function disconnectLINE(uid) {
+  if (!confirm('ยกเลิกการเชื่อม LINE?')) return;
+  await apiPost({ action: 'updateUser', user: { id: uid, lineUserId: '', lineDisplayName: '' } });
   const cached = loadMemberCache(uid);
-  if (cached) { cached.u.lineToken = ''; saveMemberCache(uid, cached); }
+  if (cached) { cached.u.lineUserId = ''; cached.u.lineDisplayName = ''; saveMemberCache(uid, cached); }
   renderMemberPage(uid, true);
 }
 
@@ -1604,7 +1579,6 @@ function checkMemberUrl(){
 }
 
 // ─── INIT ──────────────────────────────────
-loadLineSettings();
 if(!checkMemberUrl()){
   loadFromSheets();
 }
