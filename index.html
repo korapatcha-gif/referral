@@ -1537,9 +1537,12 @@ function copyRefCode(code){
 }
 
 function checkMemberUrl(){
-  const params=new URLSearchParams(window.location.search);
-  const uid=params.get('uid');
-  if(uid){renderMemberPage(uid);return true;}
+  // รองรับทั้ง ?uid=xxx (ปกติ) และ #uid=xxx (LIFF)
+  const fromSearch = new URLSearchParams(window.location.search).get('uid');
+  const hash = window.location.hash.replace(/^#/,'');
+  const fromHash = new URLSearchParams(hash).get('uid') || (hash.startsWith('uid=') ? hash.split('=')[1].split('&')[0] : null);
+  const uid = fromSearch || fromHash;
+  if(uid && uid.length > 2){ renderMemberPage(uid); return true; }
   return false;
 }
 
