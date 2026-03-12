@@ -742,9 +742,8 @@ async function connectLINE(uid) {
   try {
     // ถ้ายังไม่ได้ Login → redirect ไป LINE Login
     if (!liff.isLoggedIn()) {
-      // เก็บ uid ไว้ก่อน redirect เพราะ LIFF จะตัด query string ออก
-      sessionStorage.setItem('liff_pending_uid', uid);
-      liff.login({ redirectUri: window.location.href.split('?')[0] });
+      // ไม่ต้องตัด query string ส่ง URL กลับมาแบบเต็มๆ เพื่อป้องกัน LINE ทิ้ง sessionStorage
+      liff.login({ redirectUri: window.location.href });
       return;
     }
 
