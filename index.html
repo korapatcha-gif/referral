@@ -1237,14 +1237,7 @@ async function payout(uid){
     DB.payouts.push({ts:Date.now(),uid,name:u.name,a});
     toast(`จ่ายให้ ${u.name} แล้ว`);
 
-    // ส่ง LINE แจ้งสมาชิก
-    const notifPayout=document.getElementById('notif-payout');
-    if(u.lineToken && notifPayout && notifPayout.checked){
-      // LINE แจ้งจ่ายเงิน — Apps Script จัดการให้อัตโนมัติ
-      if(true){
-        if(res.ok) toast(`💬 LINE แจ้ง ${u.name} เรื่องโอนเงินแล้ว`,'line');
-      });
-    }
+    // LINE แจ้งจ่ายเงิน — Apps Script จัดการให้อัตโนมัติ
     renderAdmin();
   }catch(e){toast('บันทึกไม่สำเร็จ: '+e.message,'error');}
   finally{showLoading(false);}
